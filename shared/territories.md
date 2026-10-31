@@ -90,11 +90,11 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 <kind>:<identifier> — <description>
 ```
 
-**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the copy of the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` still writes `<changelog>` (writes are V5). A missing `<changelog>` path is left out of `search`'s `rg` call.
+**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the copy of the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` still writes `<changelog>`. A missing `<changelog>` path is left out of `search`'s `rg` call.
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
-**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the answer holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind (Step 0 can't run with a configuration file, so its clause is a read-through).
+**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the answer holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind.
 
 **Sources naming a territory.** A `sources:` entry may carry `{territory: <kind>, name: <name>, when: …}` in place of `path`:
 
