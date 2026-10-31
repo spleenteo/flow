@@ -61,7 +61,51 @@ Every request carries `op`, `kind` and `where`; `write` is carried when declared
 
 **Opening line.** When every adapter resolves, the conductor's opening message carries one line per declared territory: `<kind> → <where> (<adapter>, write: <write | default>)`.
 
-**`op: none`.** The request that runs `Requires` alone, with nothing read or written. It returns `ready` or `unmet: <what>`. It is the only request the conductor sends when it opens a work.
+**`op: none`.** The request that runs `Requires` alone, with nothing read or written. It returns `ready` or `unmet: <what>`. In a step with reads, it is the line for each declared kind that has none, in the same invocation (§ Reads).
+
+## Reads
+
+What the conductor fetches through an adapter for a declared kind, and how it hands the result on. An undeclared kind reads as without `territories:`.
+
+**By moment.** Each row is one request line per kind.
+
+| Moment | Kind | Request |
+|---|---|---|
+| Opening, before the profile | `guidelines` | `op: read` |
+| Opening, Step 1's memory search | `decisions`, `changelog` | `op: search`, with the request's keywords |
+| Resume (standing documents) | `decisions` | descriptions, keywords from `STATUS.md`'s `description:` |
+| Impact; slice packet; resume at `step: plan` | `decisions` | descriptions with the slice's files |
+| Impact; slice packet; resume at `step: plan` | `lenses` | `op: read` |
+| Impact; slice packet; resume at `step: plan` | a matched source naming a territory | `op: read` with `name` |
+| Review | `decisions` | descriptions again, with the planner's `Files:` |
+| Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
+| Close, changelog step | `changelog` | `op: read` |
+
+**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. A result already in the scratch folder this session is reused (the guidelines at a resume, the `list` result within a slice).
+
+**Descriptions** are an `op: search` (keywords) plus an `op: list` (no filter) in one invocation. The conductor does the `touches` match on the `list` results file with `rg` or `awk`, by `flow:docs` § Op `search` › `files`'s rule; a block of ten lines or fewer is matched as returned. It reads only the matched lines. It keeps the search hits and the matches, one line each:
+
+```text
+<kind>:<identifier> — <description>
+```
+
+**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` still writes `<changelog>` (writes are V5). A missing `<changelog>` path is left out of `search`'s `rg` call.
+
+**Scratch folder.** One `mktemp -d` per session, made at the first territory read and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
+
+**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the answer holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind (Step 0 can't run with a configuration file, so its clause is a read-through).
+
+**Sources naming a territory.** A `sources:` entry may carry `{territory: <kind>, name: <name>, when: …}` in place of `path`:
+
+```yaml
+sources: [{territory: product, name: voice, when: ["app/**"]}]
+```
+
+An undeclared kind is skipped and named. There is no `git ls-files` check. The packet heading is `### <kind>:<name>`, and the runner gets the scratch path of the `read`.
+
+**Product.** For `framing-doc` and `shaping` only, a block named `` `## Product context` `` carries the `read` text verbatim, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. Undeclared or `missing`: nothing.
+
+**Packet place.** When `territories:` declares `decisions`, `guidelines` or `lenses`, or a matched source names a territory, `V<n>-packet.md` goes in the scratch folder, else in `<work dir>/` as without territories. The ledger's head gets a third line, `Packet: <path>`. Close adds the packet to the work's commit only from the work dir. A resume at execute whose scratch packet is gone rebuilds it in this session's scratch folder, and a `Ruling:` line records the new path.
 
 ## The adapter skill
 
@@ -109,7 +153,7 @@ Every operation runs `Requires` first and may return `unmet: <what>`, or `unreac
 
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
-- Scratch files come from `mktemp -d`, outside the repo, and are never committed.
+- Scratch files come from `mktemp -d`, outside the repo, and are never committed (see [Reads](#reads)).
 - The adapter defines its `write` words (for example `direct`, which writes in place, and `comment`, which proposes) and which one is the default when `write` is absent. It documents them in the body of its skill.
 
 ## The repo
