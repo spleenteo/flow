@@ -44,10 +44,10 @@ Without `territories:`, nothing is read, resolved or shown, and every kind stays
 The conductor resolves territories once, when it opens or resumes a work: after the upgrade check, before it reads the profile (the profile may read a `guidelines` territory).
 
 - It reads `.flow.yml` and takes the adapter name of each entry, then invokes the adapter with the Skill tool, by that name, never by path.
-- **One invocation per adapter per step.** The args hold the step's request lines for every territory that adapter serves. Territories served by different adapters get one invocation each.
+- **One invocation per adapter per step.** The args hold the step's request lines for every territory that adapter serves: one request per line, separated by newlines, and the adapter answers in the same order. Territories served by different adapters get one invocation each.
 - **Stops.** The run stops with one message that names the territory, and no work is opened or resumed, on: a malformed entry (unknown kind, or no `adapter` or `where`); an adapter the session doesn't list (exact name); an unmet `Requires`; any operation that returns `unreachable`. It never falls back to the repo.
 
-**Request line.** Several per territory are allowed. Fields are separated by `; `, list values by `, ` (not by bare commas, since keywords may hold commas):
+**Request line.** Several per territory are allowed, one per line of the args. Fields are separated by `; `, list values by `, ` (not by bare commas, since keywords may hold commas):
 
 ```text
 op: search; kind: decisions; where: ENG/decisions; write: comment; keywords: cart, total; files: app/models/cart.rb
@@ -59,6 +59,8 @@ Every request carries `op`, `kind` and `where`; `write` is carried when declared
 
 **Requires before every operation.** The adapter checks its `Requires` before any operation. If one is unmet, it returns `unmet: <what>` and does nothing else.
 
+**Opening line.** When every adapter resolves, the conductor's opening message carries one line per declared territory: `<kind> → <where> (<adapter>, write: <write | default>)`.
+
 **`op: none`.** The request that runs `Requires` alone, with nothing read or written. It returns `ready` or `unmet: <what>`. It is the only request the conductor sends when it opens a work.
 
 ## The adapter skill
@@ -68,11 +70,11 @@ An adapter is an ordinary skill in a plugin. Its frontmatter holds `name` and `d
 - never `context: fork`: the skill would run in a subagent, which brings back the fork-to-connector path the decision rules out;
 - never `disable-model-invocation: true`: the Skill tool could not invoke it.
 
-The body has three sections, in this order.
+The body has three sections, in this order. They are `##` headings in the adapter's own SKILL.md (`###` here only because they sit inside this file's § The adapter skill).
 
 ### Requires
 
-What the adapter needs to work: a connector or tool it must be able to call, a credential in its own user configuration (see [Tokens, per-user values and links](#tokens-per-user-values-and-links)), a `where` that exists. Say how each is checked per `where`, and what the adapter says when one is unmet: `unmet: <what is missing and how to fix it>`, naming the item.
+What the adapter needs to work: a connector or tool it must be able to call, a credential in its own user configuration (see [Tokens, per-user values and links](#tokens-per-user-values-and-links)), a `where` that exists (a missing or wrong `where` is `unmet`, since `Requires` checks it). Say how each is checked per `where`, and what the adapter says when one is unmet: `unmet: <what is missing and how to fix it>`, naming the item.
 
 ### Fields
 
@@ -94,16 +96,16 @@ The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) 
 
 ### Operations
 
-Every operation runs `Requires` first and may return `unmet: <what>`, or `unreachable: <reason>` when the place can't be reached.
+Every operation runs `Requires` first and may return `unmet: <what>`, or `unreachable: <reason>` when the service doesn't answer.
 
 | Operation | Input | Returns |
 |---|---|---|
 | `op: none` | none | `ready` or `unmet: <what>` |
 | `op: read` | `name` (optional; absent, the document at `where`, for the single-document kinds `guidelines`, `lenses`, `product`, `changelog`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
-| `op: write` | `name: <id \| new>`; `file: <absolute path>`; the fields as frontmatter in that file | `written`, or `proposed <link>` |
+| `op: write` | `name: <id \| new>`; `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>` |
 | `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
 | `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <fields>`, or `none` |
-| `op: archive` | `folder: <absolute path>` | `archived <name>`, or `proposed <link>` |
+| `op: archive` | `folder: <absolute path of the work's folder>` | `archived <name>` (`<name>`: the archived document's identifier), or `proposed <link>` |
 
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
@@ -124,5 +126,5 @@ The reference behaviour: what an undeclared kind does, and what every adapter st
 ## Tokens, per-user values and links
 
 - Tokens and per-user values live in the adapter plugin's own [user configuration](https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration), never in `.flow.yml` or in any file of the repo.
-- `where` values and returned links are identifiers or login-only links, never public share links.
+- `where` values and returned links are identifiers or login-only links, never public share links. A local path counts as an identifier: a `file://` link to a local file is not a share link.
 - Flow doesn't enforce this. Keeping to it is the user's responsibility.
