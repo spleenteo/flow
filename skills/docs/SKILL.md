@@ -184,9 +184,9 @@ Return at most ten lines, the most relevant first, each:
 <path> — <excerpt>
 ```
 
-`<path>` relative to `dir`; the excerpt one sentence, in the file's own words. No match: return `none`.
+`<path>` relative to `dir`; the excerpt one sentence, in the file's own words.
 
-**`excerpts`**: when given, read that file; each of its lines is a match as given, in the format above, whatever the layout. Merge them with the repo's matches and keep ten at most, the most relevant first. Same output format.
+**`excerpts`**: when given, read that file; each of its lines is a match as given, in the format above, whatever the layout. Merge them with the repo's matches and keep ten at most, the most relevant first. Same output format. No match in the repo and no excerpt lines: return `none`; otherwise never `none`.
 
 ## Op `descriptions`
 
@@ -196,7 +196,7 @@ As `search`, `files` included, over decisions only: `<root>/decisions-log/` (rep
 <path> — <the file's description: line>
 ```
 
-A decision with no `description:` line gives its title instead. With `excerpts`, merge its lines as in `search`: they are descriptions already, taken as given, ten at most. No match: return `none`.
+A decision with no `description:` line gives its title instead. With `excerpts`, merge its lines as in `search`: they are descriptions already, taken as given, ten at most. `none` only when the repo has no match and the excerpts hold no line.
 
 ## Op `decision-write`
 
