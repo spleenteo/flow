@@ -175,6 +175,8 @@ areas: [engine, ui]         # the area words a decision may carry
 presets: [astro=my-stacks:astro]   # stack=skill or design=skill pairs, replacing the shipped one
 ```
 
+``changelog` also takes a map: `changelog: {path: docs/CHANGELOG.md, labels: {work: Job, decision: Why}, language: it, decisions: inline}`. `path` is the file (a plain string means the same), `labels` rename the `Work` and `Decision` lines of an entry, `language` sets the prose of the entry (otherwise it follows the existing changelog), and `decisions: inline` puts the decision links on one line joined by ` · ` instead of one line each (`lines`, the default). A missing key keeps today's format.
+
 `/flow:dev` writes `.flow.yml` only to record what you answered in the profile, on the work's branch, and in the upgrade (below).
 
 **Plugin options.** Three options of the plugin, set from its configuration or in `pluginConfigs` of your user settings ([`pluginConfigs`](https://code.claude.com/docs/en/settings-reference#pluginconfigs), [user configuration](https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration)):

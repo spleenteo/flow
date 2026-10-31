@@ -193,7 +193,7 @@ Solid arrows write, dotted arrows read. Everything lives under `docs/` by defaul
 | `docs/work/archived.md` | One row per archived work and where its outcome is | `/flow:archive` | `/flow:dev` at opening |
 | `docs/work/archive/` | Finished works | `/flow:archive`, with `git mv` | Nobody: `/flow:archive` proposes `deny` rules for `Read` and `Grep` on it in `.claude/settings.json` |
 | `.version` | The application version, one line | `flow:docs` | `flow:docs`, and tools |
-| `.flow.yml` | `root`, `stacks`, `merge`, `changelog`, `version_file`, `areas`, `presets`, `design` | `/flow:dev`: the profile's answers, on the work's branch, and the upgrade | `/flow:dev`, `/flow:changelog`, `/flow:archive`, `flow:docs` |
+| `.flow.yml` | `root`, `stacks`, `merge`, `changelog` (a path, or a map: `path`, `labels`, `language`, `decisions`), `version_file`, `areas`, `presets`, `design` | `/flow:dev`: the profile's answers, on the work's branch, and the upgrade | `/flow:dev`, `/flow:changelog`, `/flow:archive`, `flow:docs` |
 
 An older configuration file isn't read, and `/flow:dev` no longer reads `stack:` (it reads `stacks:`). `/flow:dev` finds both on the default branch and offers the [upgrade](../shared/work.md#upgrade); `/flow:changelog`, `/flow:archive` and `flow:docs` stop on an older file and point to `/flow:dev`. `install.sh` still reads `stack:`, to detect the stacks.
 
