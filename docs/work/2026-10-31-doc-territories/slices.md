@@ -36,6 +36,10 @@ Shape: A in [shaping.md](shaping.md) (A1–A10). Breadboard skipped: no new plac
 - With `changelog: docs/CHANGELOG.md` or no key, the entry is byte-for-byte today's format.
 - Gate green.
 
+**Deviations found while planning V1**
+- The work-folder lookup gets the `<dir>/` prefix `flow:docs` requires on every `rg` path; no match continues from the git facts, several matches return `FAILED`.
+- `shared/work.md` line 8 ("Keys this file uses") also gains `changelog`, since archive step 2 reads it.
+
 ## V2 — Guidelines as a set of sources
 
 **In**
