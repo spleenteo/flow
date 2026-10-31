@@ -5,7 +5,7 @@ The shared definition of a work's home, state, close and archive, read by `/flow
 - **repo**: a code repository; works live in `<root>/work/`, where `<root>` is `docs` unless `.flow.yml` sets `root`. Used by `/flow:dev`.
 - **project**: a folder the user names when opening a project, never a code repo's `docs/`. Used by `/flow:project`.
 
-Configuration (repo) lives in `.flow.yml` at the repository root. An older configuration file is converted by the [upgrade](#upgrade), never read. Keys this file uses: `root`, `merge` (`local` | `pr`, default `local`), `areas` (see [Decisions](#decisions)).
+Configuration (repo) lives in `.flow.yml` at the repository root. An older configuration file is converted by the [upgrade](#upgrade), never read. Keys this file uses: `root`, `merge` (`local` | `pr`, default `local`), `changelog` (a path, or a map whose `path` is used; see `flow:docs` § Configuration), `areas` (see [Decisions](#decisions)).
 
 ## Home
 
@@ -300,7 +300,7 @@ for f in docs/work/*/STATUS.md; do
 done
 ```
 
-**2. Check the outcome is recorded elsewhere.** `rg "<slug>" <changelog>`: if absent, the outcome is recorded nowhere; flag it and propose `/flow:changelog` first. `rg -l "<slug>" <root>/decisions-log/ 2>/dev/null`: the decisions stay out of the archive. If either is missing, don't block: report it and ask whether to archive anyway.
+**2. Check the outcome is recorded elsewhere.** `<changelog>` is the changelog's path: the string value of `changelog:` in `.flow.yml`, or the `path` of its map, default `<root>/CHANGELOG.md`. `rg "<slug>" <changelog>`: if absent, the outcome is recorded nowhere; flag it and propose `/flow:changelog` first. `rg -l "<slug>" <root>/decisions-log/ 2>/dev/null`: the decisions stay out of the archive. If either is missing, don't block: report it and ask whether to archive anyway.
 
 **3. Census of inbound links.** `grep -rn "work/<dir>/" --include="*.md" docs README.md .claude 2>/dev/null`. Each becomes `work/archive/<dir>/`. If the count is high, say so before proceeding.
 
