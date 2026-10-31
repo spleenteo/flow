@@ -94,7 +94,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
-**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the answer holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind.
+**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind.
 
 **Sources naming a territory.** A `sources:` entry may carry `{territory: <kind>, name: <name>, when: …}` in place of `path`:
 
@@ -104,9 +104,36 @@ sources: [{territory: product, name: voice, when: ["app/**"]}]
 
 An undeclared kind is skipped and named. There is no `git ls-files` check. The packet heading is `### <kind>:<name>`, and the runner gets the path of its copy in the scratch folder.
 
-**Product.** For `framing-doc` and `shaping` only, a block named `` `## Product context` `` carries the `read` text verbatim, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. The block is context only: the document the tool writes cites it as `product:<name>` and never copies it. Undeclared or `missing`: nothing.
+**Product.** For `framing-doc` and `shaping` only, a block named `` `## Product context` `` carries the `read` text verbatim, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. Its first line, word for word: `Context only: cite it as `product:<name>`, never copy its text into the document you write.` (`<name>` is the read's name, `document` when none). Undeclared or `missing`: nothing.
 
 **Packet place.** When `territories:` declares `decisions`, `guidelines` or `lenses`, or a matched source names a territory, `V<n>-packet.md` goes in the scratch folder, else in `<work dir>/` as without territories. The ledger's head gets a third line, `Packet: <path>`. Close adds the packet to the work's commit only from the work dir. A resume at execute whose scratch packet is gone rebuilds it in this session's scratch folder, and a `Ruling:` line records the new path.
+
+## Writes
+
+What the conductor sends through an adapter for a declared kind, and what comes back. An undeclared kind is written as without `territories:`: the repo, committed as today.
+
+| Moment | Kind | Requests |
+|---|---|---|
+| Decision recorded (a conductor, `flow:grill`) | `decisions` | `op: write` with `name: new` |
+| Status changed | `decisions` | `op: read` with `name`, then `op: write` with that `name` |
+| Close, changelog step | `changelog` | `op: list` on `decisions` (for the ids), then `op: write` with no `name` |
+| Profile writes the `## Tests` lines | `guidelines` | `op: write` with no `name` |
+
+Each write carries `file: <absolute path>`, and `write` when declared. One invocation per adapter per step still holds: the other kinds that adapter serves get `op: none`.
+
+**Scratch folders.** Every writer makes the session scratch folder at its first step that touches a declared territory, if this session has none: the conductor, `flow:grill` and a manual `/flow:changelog`. Each write gets a fresh, empty folder, `mktemp -d "<session scratch folder>/w.XXXXXX"`, so `decisions-check` sees one file. The request to `flow:docs` carries it as `scratch: <that folder>`.
+
+**Decision.** With `decisions` declared, the request is the § Decisions request plus `scratch:`. `flow:docs` writes `<scratch>/YYYY-MM-DD-<slug>.md`, runs `decisions-check` on that folder, commits nothing, and returns `Composed <absolute path> — check: <summary line>`, with no sha. The adapter then gets `op: write; kind: decisions; where: …[; write: …]; name: new; file: <path>`. On `NEEDS:` or `FAILED:`, nothing is handed to the adapter.
+
+**Status change.** The conductor first runs `op: read; kind: decisions; name: <id>`, then sends `decision-status` with `scratch:` and `file: <absolute path of its copy>`. `flow:docs` copies the file to `<scratch>/<its **Date**>-<name less a leading date>.md`, edits it and checks it. Any error removes the copy and returns `FAILED: check: <first error>`. Success returns `Composed <absolute path> — <status> — check: <summary line>`, and the adapter gets `op: write; name: <id>; file: <path>`. `superseded_by` takes the new decision's identifier.
+
+**Changelog.** The close's invocation also sends `op: list; kind: decisions` when `decisions` is on the same adapter, else in its own invocation. The conductor puts the block in a scratch file and matches `work` anchored, `rg '(— |; )work: <slug>(;|$)' <file> | awk '{print $1}'`, which gives `decision-ids: decisions:<id>, …`. `changelog-write`, with `scratch:`, inserts the entry into a copy of `excerpts` (or under a new two-line intro) at `<scratch>/CHANGELOG.md`, writes the version file and commits it alone: `git -C <dir> add <version_file>`, then `git -C <dir> commit -m "Bump the version to vX.Y.Z" -- <version_file>`. It returns `Recorded v<version> — <title> — <sha>; changelog: <absolute path>; missing decisions: …; manual after merge: …`. Then `op: write; kind: changelog; file: <path>`, with no `name`. A territory decision is named `` `decisions:<id>` ``, never linked, since a `file://` link in a repo changelog fails the Gate. With `decision-ids`, the **Decision** bullet stays even without `decisions-log/`. On a changelog territory, a repo decision is named `` `<root>/decisions-log/<file>` ``.
+
+**`## Tests` on a territory.** At the profile's § Writing, the two lines go into the conductor's copy of the guidelines `read`: at the start of `## Tests`, or in a new section. Then `op: write; kind: guidelines; file: <copy>`, with no `name`. While `proposed`, the level holds for this session only.
+
+**Returns.** `written` or `written <id>` is reported as `<kind>:<id>`. `proposed <link>` adds the line `- YYYY-MM-DD — <kind>:<name> — <link>` under `## Pending proposals` in `STATUS.md`, a section before `## Log`, created when missing. `<name>` is the id, the composed file's name without `.md` for `new`, or `document` for a single document. Outside a work, the link is only reported.
+
+**The pending line.** Before the append, the conductor runs `git -C <repo root> diff --quiet -- <work dir>/STATUS.md`. If it exits 0, the line is committed alone: `git -C <repo root> add <work dir>/STATUS.md`, then `git -C <repo root> commit -m "Note a pending proposal on <kind>" -- <work dir>/STATUS.md`. Otherwise the line is appended but not committed, and the message says so (it goes with the next `STATUS.md` commit). The work close's report (Step 6 move 5; § Closing a work step 5) adds `Pending proposals: <kind>:<name> <link>, … | none`.
 
 ## The adapter skill
 
@@ -137,6 +164,8 @@ A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `st
 | superseded_by | null |
 ```
 
+`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out.
+
 The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) must round-trip through `read` and `write` unchanged.
 
 ### Operations
@@ -147,13 +176,14 @@ Every operation runs `Requires` first and may return `unmet: <what>`, or `unreac
 |---|---|---|
 | `op: none` | none | `ready` or `unmet: <what>` |
 | `op: read` | `name` (optional; absent, the document at `where`, for the single-document kinds `guidelines`, `lenses`, `product`, `changelog`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
-| `op: write` | `name: <id \| new>`; `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>` |
+| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>` |
 | `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
-| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <fields>`, or `none` |
+| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`, or `none` |
 | `op: archive` | `folder: <absolute path of the work's folder>` | `archived <name>` (`<name>`: the archived document's identifier), or `proposed <link>` |
 
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
+- `list` lines use the § Fields names, list values comma-separated. The conductor puts a returned block in a scratch file and matches `work` anchored: `rg '(— |; )work: <slug>(;|$)' <file> | awk '{print $1}'`.
 - Scratch files come from `mktemp -d`, outside the repo, and are never committed (see [Reads](#reads)).
 - The adapter defines its `write` words (for example `direct`, which writes in place, and `comment`, which proposes) and which one is the default when `write` is absent. It documents them in the body of its skill.
 
