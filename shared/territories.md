@@ -92,7 +92,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 **Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the copy of the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` writes the entry to `<scratch>/CHANGELOG.md`, never `<changelog>` (§ Writes › Changelog). A missing `<changelog>` path is left out of `search`'s `rg` call.
 
-**Scratch folder.** One `mktemp -d` per session, made at the first territory read and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
+**Scratch folder.** One `mktemp -d` per session, made at the first territory read or write and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
 **Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind.
 
@@ -114,14 +114,15 @@ What the conductor sends through an adapter for a declared kind, and what comes 
 
 | Moment | Kind | Requests |
 |---|---|---|
-| Decision recorded (a conductor, `flow:grill`) | `decisions` | `op: write` with `name: new` |
+| Decision recorded (a conductor, `/flow:grill`) | `decisions` | `op: write` with `name: new` |
 | Status changed | `decisions` | `op: read` with `name`, then `op: write` with that `name` |
-| Close, changelog step | `changelog` | `op: list` on `decisions` (for the ids), then `op: write` with no `name` |
+| Close, changelog step | `decisions` | `op: list`, when `decisions` is declared (for the ids) |
+| Close, changelog step | `changelog` | `op: write` with no `name`, when `changelog` is declared |
 | Profile writes the `## Tests` lines | `guidelines` | `op: write` with no `name` |
 
 Every request line carries `op`, `kind` and `where` (§ Resolution); each write adds `file: <absolute path>`, and `write` when declared. One invocation per adapter per step still holds: the other kinds that adapter serves get `op: none`.
 
-**Scratch folders.** Every writer makes the session scratch folder at its first step that touches a declared territory, if this session has none: the conductor, `flow:grill` and a manual `/flow:changelog`. Each write gets a fresh, empty folder, `mktemp -d "<session scratch folder>/w.XXXXXX"`, so `decisions-check` sees one file. The request to `flow:docs` carries it as `scratch: <that folder>`.
+**Scratch folders.** Every writer makes the session scratch folder at its first step that touches a declared territory, if this session has none: the conductor, `/flow:grill` and a manual `/flow:changelog`. Each write gets a fresh, empty folder, `mktemp -d "<session scratch folder>/w.XXXXXX"`, so `decisions-check` sees one file. The request to `flow:docs` carries it as `scratch: <that folder>`.
 
 **Decision.** With `decisions` declared, the request is the work reference's § Decisions request (`shared/work.md`) plus `scratch:`. `flow:docs` writes `<scratch>/YYYY-MM-DD-<slug>.md`, runs `decisions-check` on that folder, commits nothing, and returns `Composed <absolute path> — check: <summary line>`, with no sha. The adapter then gets `op: write; kind: decisions; where: <where>[; write: <word>]; name: new; file: <path>`. On `NEEDS:` or `FAILED:`, nothing is handed to the adapter.
 
