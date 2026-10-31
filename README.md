@@ -165,7 +165,7 @@ None required. Defaults: `docs/` as the root, `.version` at the repo root, `merg
 Optional `.flow.yml` at the project root:
 
 ```yaml
-root: docs                  # where work/, decisions-log/ and development-guidelines.md live
+root: docs                  # where work/ lives, and every kind territories doesn't move
 stacks: [astro, datocms]    # rails | astro | datocms | react | node | generic
 merge: local                # local | pr
 design: pen                 # the design tool /flow:design uses; only pen ships an adapter
