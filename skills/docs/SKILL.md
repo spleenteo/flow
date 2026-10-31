@@ -184,9 +184,9 @@ Return at most ten lines, the most relevant first, each:
 <path> — <excerpt>
 ```
 
-`<path>` relative to `dir`; the excerpt one sentence, in the file's own words.
+`<path>` relative to `dir`; the excerpt one sentence, in the file's own words. No match in the repo and no excerpt lines (or no `excerpts`): return `none`.
 
-**`excerpts`**: when given, read that file; each of its lines is a match as given, in the format above, whatever the layout. Merge them with the repo's matches and keep ten at most, the most relevant first. Same output format. No match in the repo and no excerpt lines: return `none`; otherwise never `none`.
+**`excerpts`**: when given, read that file; each of its lines is a match as given, in the format above, whatever the layout. Merge them with the repo's matches and keep ten at most, the most relevant first. Same output format.
 
 ## Op `descriptions`
 
