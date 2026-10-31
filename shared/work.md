@@ -356,7 +356,21 @@ When the latest is higher than the installed version, compared number by number,
 
 Old traces are what an earlier version of this plugin left behind under other names. The upgrade rewrites the ones Flow owns and points at the ones it doesn't. It is a run of its own: when `/flow:dev` or `/flow:project` finds old traces, it says so, offers the upgrade, and nothing else happens in that run (no profile, no first-run questions, no work opened or resumed). The next run starts on the upgraded state. `/flow:changelog`, `/flow:archive` and `flow:docs` never upgrade: facing an older configuration file, they stop and point to `/flow:dev`.
 
-**repo.** Looked for on the default branch (`git show <default>:<file>`; the target of Closing a work, step 4), not in the checkout:
+**repo.** Looked for on the default branch (the target of Closing a work, step 4), not in the checkout, by one `bash` block that prints names or lines only (`<default>` is that branch, `<root>` the root the first command prints):
+
+```bash
+git grep -h '^root:' <default> -- .flow.yml .devflow.yml
+git cat-file -e <default>:.devflow.yml
+git grep -l '^stack:' <default> -- .flow.yml .devflow.yml
+git grep -l -F '/devflow-archive' <default> -- <root>/work/archived.md
+git grep -l -F 'Devflow passes this file' <default> -- '<root>/*.md'
+git grep -n -E '/devflow|/projectflow|\.devflow\.yml' <default> -- CLAUDE.md .claude/CLAUDE.md CLAUDE.local.md
+git grep -n -E '\bdevflow|\bprojectflow' <default> -- .claude/settings.json
+git ls-tree --name-only <default> .claude/skills/
+for b in $(git for-each-ref --format='%(refname:short)' refs/heads/work/); do git cat-file -e "$b:.devflow.yml" 2>/dev/null && echo "$b"; done
+```
+
+No file is printed in this check: the output carries names and matching lines, never a file's content.
 
 | Found | Rewritten |
 |---|---|
