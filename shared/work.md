@@ -219,7 +219,7 @@ Two environment variables beat all of this, and Flow can't see past them: `CLAUD
    1. Show `git status --short`, so the user sees what the commit will and won't hold.
    2. The version file missing (`.version` at the repo root, or `version_file` in `.flow.yml`): ask the current version, suggesting `0.1.0` if nothing has been released and `1.0.0` if the product is in production. The answer goes into the requests as `current`.
    3. The branch holds works unrelated to this one: ask whether they ship as one release or two. Two means one slug per release.
-   4. Propose. Invoke the Skill tool with skill `flow:docs` and args one line of `key: value` pairs, self-contained, since the fork sees no conversation:
+   4. Propose. With a `changelog` territory declared, first make one adapter invocation `op: read; kind: changelog` (it stops as § Resolution does) and add `excerpts: <the returned path>` to both requests below, the conductor's copy of the returned file in the scratch folder (shared/territories.md § Reads); `flow:docs` then takes tone and language from it, and `changelog-write` still writes `<changelog>`. Invoke the Skill tool with skill `flow:docs` and args one line of `key: value` pairs, self-contained, since the fork sees no conversation:
 
       ```
       op: changelog-propose, layout: repo, dir: <absolute repo root>, work: <slug>, base: <the work's base: in STATUS.md>, release: one[, current: <version>]

@@ -38,6 +38,7 @@ The `ARGUMENTS:` text is a header line of `key: value` pairs, followed, for `dec
 | `slice` | `decision-write`, project layout: `S<n>` or `null` |
 | `file` | `decision-status`: the decision file, relative to `dir` |
 | `status`, `superseded_by`, `resolved_by`, `note` | `decision-status`: the new status (`superseded` or `resolved`), the file name of the new decision or the slug of the resolving work, and the one-line note for the status log |
+| `excerpts` | Absolute path of a scratch file the conductor wrote (`search`, `descriptions`, changelog ops). The one path outside `dir` this skill reads. For `search` and `descriptions` it holds lines already in the return format, from a territory; for the changelog ops, the changelog's past entries read from a territory |
 | `install` | `decision-check`: `yes` copies the script into the repo |
 
 Required: `op`, `layout`, `dir`; and per op: changelog ops need `work`, `base`, `release`; `changelog-write` also `level` and `title` per release; `search` and `descriptions` need `keywords` or `files` (at least one; in the project layout `files` is ignored, so `files` alone is `NEEDS: keywords`); `decision-write` needs `kind`, `slug`, `work` (repo) or `project` and `slice` (project), and the notes `decision:`, `context:`, `alternatives:` (decision) or `why-deferred:` (deferral), `consequences:`, `reopen-when:`, `touches:` (repo layout) and `area:` (repo layout); `decision-status` needs `file`, `status`, the matching `superseded_by` or `resolved_by`, and `note`; `decision-check` needs nothing more in the repo layout. In the project layout `decision-write`, `decision-status` and `decision-check` need `project`. A changelog op with `layout: project` is `NEEDS: layout repo`: a project has no changelog.
@@ -73,7 +74,7 @@ Read `.flow.yml` in `dir`. Never create it. When an older configuration file nam
 
 **The `changelog` map**: keys `path` (`<root>/CHANGELOG.md`), `labels.work` (`Work`), `labels.decision` (`Decision`), `language` (unset), `decisions` (`lines`). A missing key takes its default; unknown keys are ignored. Flow style on one line and block style are both accepted. `decisions` holds `lines` or `inline`; anything else: `FAILED: changelog.decisions must be lines or inline`, nothing written. A string value is the `path`. Below, `<changelog>` is the changelog's path: the string value, or the map's `path`.
 
-**Language**: `language` of the `changelog` map when set. Otherwise that of the existing changelog entries; for a new changelog, that of the rest of `<root>/`. It sets the prose of the entry and the intro of a new changelog, not the labels, and not the commit message.
+**Language**: `language` of the `changelog` map when set. Otherwise that of the existing changelog entries (with `excerpts`, those in that file); for a new changelog, that of the rest of `<root>/`. It sets the prose of the entry and the intro of a new changelog, not the labels, and not the commit message.
 
 ## Op `changelog-propose`
 
@@ -87,7 +88,7 @@ git -C <dir> diff <base>..HEAD --stat
 git -C <dir> status --short
 ```
 
-2. Read `<changelog>`: existing entries set tone and detail. Read the version file for the current number; if it is missing, use `current`; if that is missing too, `NEEDS: current`. Read the work's `STATUS.md` and `slices.md` in its folder, found with `rg -l '^work: <slug>$' <dir>/<root>/work/*/STATUS.md` (dated or not; never a glob on the folder name, which also matches longer slugs). No match: continue from the git facts alone. More than one match: `FAILED: several work folders for <slug>`. The "V<n> — done on" sections say what really happened.
+2. Read `<changelog>`: existing entries set tone and detail. With `excerpts`, read that file instead: its entries replace `<changelog>` for tone, detail and language (the changelog itself may live in a territory and be absent from the repo). Read the version file for the current number; if it is missing, use `current`; if that is missing too, `NEEDS: current`. Read the work's `STATUS.md` and `slices.md` in its folder, found with `rg -l '^work: <slug>$' <dir>/<root>/work/*/STATUS.md` (dated or not; never a glob on the folder name, which also matches longer slugs). No match: continue from the git facts alone. More than one match: `FAILED: several work folders for <slug>`. The "V<n> — done on" sections say what really happened.
 3. `release` names the releases. With a split, each slug is one release: attribute the commits to it by their subjects and the files they touch. Versions chain: the second release builds on the first.
 4. Apply the rule. Not a negotiation.
 
@@ -173,7 +174,7 @@ Search before reading, then read only what matches.
 - `layout: repo` (`<dir>/<changelog>` is the changelog's path): `rg -il "<keyword>" <dir>/<changelog> <dir>/<root>/decisions-log/ --glob '*.md' --glob '!README.md' <dir>/<root>/work/archived.md`, one keyword at a time or as an alternation. Never `<root>/work/archive/`.
 - `layout: project`: under `dir`, `rg -il "<keyword>" --glob '*/STATUS.md' --glob '*/decisions/*.md' --glob '*/lessons.md' <dir>`.
 
-`rg` always gets an explicit path. Read the matching files, and for each keep the lines that bear on the keywords.
+`rg` always gets an explicit path; a `<changelog>` that does not exist is left out of the call. Read the matching files, and for each keep the lines that bear on the keywords.
 
 **`files`** (repo layout): the decisions in `<dir>/<root>/decisions-log/` are matched by their frontmatter, not by their text. For each decision file with a `touches:` line, split the list; an entry matches a requested file when, compared by whole path segments, it equals the file or is a parent directory of it (`src/menu` matches `src/menu/Item.tsx`, not `src/menu-old/x.ts`; ignore a trailing `/`). A path that appears only in the body doesn't count. Files with no `touches:` (legacy) never match by `files`. With both `keywords` and `files`, a file is a match when it matches either; the excerpt for a `files` match is the file's description. With `files` alone, `<root>/decisions-log/` is the only place searched.
 
@@ -185,6 +186,8 @@ Return at most ten lines, the most relevant first, each:
 
 `<path>` relative to `dir`; the excerpt one sentence, in the file's own words. No match: return `none`.
 
+**`excerpts`**: when given, read that file; each of its lines is a match as given, in the format above, whatever the layout. Merge them with the repo's matches and keep ten at most, the most relevant first. Same output format.
+
 ## Op `descriptions`
 
 As `search`, `files` included, over decisions only: `<root>/decisions-log/` (repo; `rg` gets `--glob '*.md' --glob '!README.md'`, so the installed `check.sh` never matches), `*/decisions/*.md` (project). Return at most ten lines, each:
@@ -193,7 +196,7 @@ As `search`, `files` included, over decisions only: `<root>/decisions-log/` (rep
 <path> — <the file's description: line>
 ```
 
-A decision with no `description:` line gives its title instead. No match: return `none`.
+A decision with no `description:` line gives its title instead. With `excerpts`, merge its lines as in `search`: they are descriptions already, taken as given, ten at most. No match: return `none`.
 
 ## Op `decision-write`
 
