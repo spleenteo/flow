@@ -387,7 +387,7 @@ Mechanics of each move: the work reference, § Closing a work (repo) and § Arch
 2. **Docs.** Ask, then follow the work reference, § Closing a work (repo), step 2: the questions, the `flow:docs` requests (`changelog-propose`, then `changelog-write`) and the report. Changelog entry and `.version`, committed on the branch.
 3. **Archive.** Ask, then invoke `/flow:archive`: the work folder moves to the archive, committed on the branch.
 4. **Merge.** Ask. Find the target and merge as the reference says: with `merge: local` (the default) propose the local merge and run it after an ok; with `merge: pr` propose a pull request and merge nothing. Push and tag each need their own ok. The branch is deleted only on request.
-5. **Report.** Where the work lived, phases done and skipped (with why), slice count, what the verifications found, version assigned, total wall-clock and cost from the Log, and what was merged, pushed or tagged (or that nothing was), and the line `Pending proposals: <kind>:<name> <link>, … | none` from `STATUS.md`'s `## Pending proposals` (the contract's § Writes › Returns).
+5. **Report.** Where the work lived, phases done and skipped (with why), slice count, what the verifications found, version assigned, total wall-clock and cost from the Log, and what was merged, pushed or tagged (or that nothing was), and, only when `territories:` is declared, the line `Pending proposals: <kind>:<name> <link>, … | none` from `STATUS.md`'s `## Pending proposals` (the contract's § Writes › Returns).
 
 Code, changelog, version and archived work land on the target in one changeset. If something after the close needs the work's documents, the reference says how to move them back.
 
