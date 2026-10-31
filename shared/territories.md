@@ -71,17 +71,19 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 | Moment | Kind | Request |
 |---|---|---|
-| Opening, before the profile | `guidelines` | `op: read` |
+| Opening or resume, before the profile | `guidelines` | `op: read` |
 | Opening, Step 1's memory search | `decisions`, `changelog` | `op: search`, with the request's keywords |
 | Resume (standing documents) | `decisions` | descriptions, keywords from `STATUS.md`'s `description:` |
 | Impact; slice packet; resume at `step: plan` | `decisions` | descriptions with the slice's files |
 | Impact; slice packet; resume at `step: plan` | `lenses` | `op: read` |
 | Impact; slice packet; resume at `step: plan` | a matched source naming a territory | `op: read` with `name` |
+| After the plan, before the review dispatch | `decisions` | descriptions again, with the planner's `Files:` |
+| After the plan, before the review dispatch | a newly matched source naming a territory | `op: read` with `name` |
 | Review | `decisions` | descriptions again, with the planner's `Files:` |
 | Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
 | Close, changelog step | `changelog` | `op: read` |
 
-**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. A result already in the scratch folder this session is reused (the guidelines at a resume, the `list` result within a slice).
+**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. The conductor copies each `read` and `results:` file it keeps into the scratch folder; reuse and `excerpts:` point only there. A result already in the scratch folder this session is reused (the `list` result within a slice; a resume in a fresh session has none, so it reads the guidelines again).
 
 **Descriptions** are an `op: search` (keywords) plus an `op: list` (no filter) in one invocation. The conductor does the `touches` match on the `list` results file with `rg` or `awk`, by `flow:docs` § Op `search` › `files`'s rule; a block of ten lines or fewer is matched as returned. It reads only the matched lines. It keeps the search hits and the matches, one line each:
 
@@ -89,7 +91,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 <kind>:<identifier> — <description>
 ```
 
-**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` still writes `<changelog>` (writes are V5). A missing `<changelog>` path is left out of `search`'s `rg` call.
+**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the copy of the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` still writes `<changelog>` (writes are V5). A missing `<changelog>` path is left out of `search`'s `rg` call.
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
