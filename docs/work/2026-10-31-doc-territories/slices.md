@@ -130,6 +130,14 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 
 **Gotchas**: reads are not validated: `decisions-check` runs on writes (V5). Carried from V3 (ruling): the read order doesn't hold headless — the model batches `.flow.yml`, the guidelines and the changelog in one early shell call, before adapters resolve. Fix here: the upgrade check matches its traces without printing any file; "read `.flow.yml` alone" becomes its own step at `skills/dev/SKILL.md` ~:116 and ~:120; the "Read if present" lines at ~:42 and ~:49 apply only after territories resolve; verify with a grep on the order of tool calls. Context: one adapter call per step, results capped or in a scratch file.
 
+**Deviations found while planning V4**
+- `skills/dev/SKILL.md` ~:104 is edited too (the dependency check reads stacks through the profile before the upgrade check); ~:47 (lenses) gets the same scope as ~:42; ~:49 becomes "read `.flow.yml` alone".
+- `shared/work.md` (§ Upgrade command block, the close's changelog step, the ledger's `Packet:` line) and `agents/slice-runner.md` change, beyond the mandate's Docs list.
+- A `guidelines` territory with no `## Tests`: the profile asks for the level and it holds for this session only (writing it there is V5).
+- Extra checks: a changelog `excerpts:` run and routing tables for shaping and frame.
+- The optional split into V4a/V4b was not taken: the plan stays whole (the user asked to run without stops).
+- After review: Step 0's clause (~:174) can't be tested with a configuration file present; the draft offer (~:145) is checked instead. Product context goes to `framing-doc` and `shaping` only; when the conductor writes `frame.md` itself it reads it but never copies it in; a `flow:brainstorm`-led frame gets no product block. Whether a forked read outside the working directories is allowed is recorded by a run; a denial is reported, since the runner reading a scratch packet hits the same rule.
+
 ## V5 — Writes through territories
 
 **In**
