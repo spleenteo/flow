@@ -22,7 +22,7 @@ Frame: [frame.md](frame.md). User decisions taken before shaping: the declaratio
 | R2 | Flow itself writes no token or secret into a repo, and its documentation says where tokens and per-user values belong (outside the repo) and that `where` values and links must not be public share links; keeping to it is the user's responsibility (user ruling, 2026-10-31) | Must-have | Measure |
 | R3 | Flow's agents, which have no connectors, receive a territory's content in their packet; when a territory can't be reached, Flow stops and says which one | Must-have | Problem, Measure |
 | R4 | A write returns *written* or *proposed, with a link*; a work's close lists the proposals still pending | Must-have | Outcome (writing peculiarities) |
-| R5 | A decision's fields (`kind`, `status`, `description`, `touches`, `work`, `area`, `superseded_by`, `resolved_by`) are written and queried on a service without frontmatter, through a key/value table at the top of the document | Must-have | Outcome (read, write, search) |
+| R5 | A decision's fields (`kind`, `status`, `description`, `touches`, `work`, `area`, `superseded_by`, `resolved_by`) are written and queried on a service without frontmatter: in the service's native fields when it has them (data attributes, custom fields), else in a key/value table at the top of the document; the adapter says which | Must-have | Outcome (read, write, search) |
 | R6 | The guidelines are a set of sources, each with when it applies; the conductor puts in a packet only the sources that match it | Must-have | Problem, Measure |
 | R7 | The product context reaches the shaping and the frame when they open | Must-have | Problem, Measure |
 | **R8** | **The changelog adapts to the project** | Must-have | Outcome (writing peculiarities) |
@@ -49,7 +49,7 @@ The conductor (main session, with connectors) calls the territory's adapter skil
 | Part | Mechanism | Flag |
 |------|-----------|:----:|
 | A1 | `.flow.yml` gains `territories:`, one entry per kind: `adapter` (qualified skill name), `where` (the place, in the adapter's terms), `write` (a word the adapter interprets, e.g. `direct`, `comment`). Absent kind → the repo adapter on `<root>/` | |
-| A2 | Adapter contract (a doc in `shared/`): sections `## Requires`, `## Fields` (how frontmatter keys map to the key/value table), `## Operations` with `read`, `write` (returns `written` or `proposed <link>`), `search`, `list` (documents with their fields), `archive` (a folder of files, kept as a folder) | |
+| A2 | Adapter contract (a doc in `shared/`): sections `## Requires`, `## Fields` (how frontmatter keys map to the service's native fields or, failing those, to the key/value table), `## Operations` with `read`, `write` (returns `written` or `proposed <link>`), `search`, `list` (documents with their fields), `archive` (a folder of files, kept as a folder) | |
 | A3 | The conductor resolves the adapter at the start of a step that needs a territory, runs `## Requires`, stops on failure naming the territory | |
 | A4 | For external territories the conductor fetches through the adapter every read that ends in a packet or a request: what `flow:docs` would have read (descriptions, matches), the guidelines, the impact lenses, the sources, the product context; `flow:docs` writes nothing there — writes go through the adapter from the conductor | |
 | A5 | Pending proposals: the conductor appends `- <kind> — <title> — <link>` under `## Pending proposals` in `STATUS.md`; the close adds one line listing them to its report, and its sequence is unchanged | |
@@ -93,7 +93,7 @@ The adapter syncs a territory into a gitignored folder under `<root>/`; Flow kee
 | R2 | Flow itself writes no token or secret into a repo, and its documentation says where tokens and per-user values belong and that `where` values and links must not be public share links | Must-have | ✅ | ✅ | ❌ |
 | R3 | Flow's agents, which have no connectors, receive a territory's content in their packet; when a territory can't be reached, Flow stops and says which one | Must-have | ✅ | ❌ | ❌ |
 | R4 | A write returns *written* or *proposed, with a link*; a work's close lists the proposals still pending | Must-have | ✅ | ✅ | ✅ |
-| R5 | A decision's fields are written and queried on a service without frontmatter, through a key/value table at the top of the document | Must-have | ✅ | ❌ | ✅ |
+| R5 | A decision's fields are written and queried on a service without frontmatter, in native fields or a key/value table | Must-have | ✅ | ❌ | ✅ |
 | R6 | The guidelines are a set of sources, each with when it applies; the conductor puts in a packet only the sources that match it | Must-have | ✅ | ✅ | ✅ |
 | R7 | The product context reaches the shaping and the frame when they open | Must-have | ✅ | ✅ | ✅ |
 | R8 | The changelog adapts to the project | Must-have | ✅ | ✅ | ✅ |
