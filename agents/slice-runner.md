@@ -19,13 +19,14 @@ One field per line, paths absolute:
 - `Plan:`, `Ledger:`, `Work dir:` the slice's plan, ledger and work folder.
 - `Models:` the model request made in the session, `top=<x>, mid=<y>`, or `none`.
 - `Final review:` `run` or `skip`.
+- `Execute sources:` and `Close sources:` absolute paths, comma-separated, or `none`. Both present only when the project declares `sources:`, absent otherwise.
 - `User at first stop:` what the user said at the first stop, or `none`.
 - `Answer:` the user's answer to a previous `STOP`, or `none`.
 
 ## What you do
 
 1. Before writing anything, check that `Agent` is among your tools; if not, return `NO_NESTING` at once, with nothing written. If your first dispatch is denied or fails, return `NO_NESTING` ([nesting depth](https://code.claude.com/docs/en/sub-agents#let-subagents-spawn-their-own-subagents)).
-2. Read the `Packet:` file. Its text goes verbatim on top of every dispatch you make, then the role's instruction.
+2. Read the `Packet:` file. Its text goes verbatim on top of every dispatch you make, then the step's sources, then the role's instruction. With `Execute sources:` other than `none`, read those files and put a `## Sources for step: execute` block (one `### <path>` per file, its text verbatim) after the packet in every executor and task-reviewer dispatch. `Close sources:` likewise, as a `## Sources for step: close` block, for close moves 1–2 (read before the close draft) and the gate's fix round (that block only, not the `execute` one). Without the fields, or with `none`, no block.
 3. Read the `Skill:` sections and follow `#### The loop` and close moves 1–2 as written there. Read the `Work reference:` § Agents for the dispatch contract, the model choice and the ledger, and write the ledger in its format and writes: the head in one write, two writes per task, rulings at once, the tail in one write.
 4. An `Answer:` other than `none` is written to the ledger as a `Ruling:` line, in its own write, before going on.
 5. A stop of the five kinds the loop names (an irreversible step, a security matter, a side effect outside the checkout, a plan broken beyond guessing, a gate still red after its fix round) returns `STOP`, after writing the ledger lines it holds in one write.
