@@ -165,6 +165,14 @@ Reads now go through territories. `shared/territories.md` gained § Reads: a tab
 - No `territories:` → decisions and changelog are written and committed as today.
 - Gate green.
 
+**Deviations found while planning V5**
+- `shared/territories.md`, `shared/work.md`, `skills/dev/SKILL.md` and `skills/grill/SKILL.md` change beyond the Docs list; `op: write` gets an optional `name` and `read` a fixed frontmatter form.
+- A decision on a territory is named by identifier (`decisions:<id>`), never linked (a `file://` link fails the Gate's link check). On a territory a status change fails on any check error.
+- Each pending-proposal line in `STATUS.md` is committed alone, so the changelog commit holds only the version file.
+- "The close's report" is the work close's report (Step 6 move 5); the slice's second stop is unchanged.
+- The spike reaches the default permission mode with `--setting-sources project,local` in a throwaway repo (the user settings set `defaultMode: auto`), checked on each run's `init`; it also checks a worktree's git dir. Both places denied → V5 changes neither place nor runner.
+- After review: the spike runs every probe in `default` and in `auto`; `git-dir` wins only if the worktree probe also passes in both modes, else `mktemp -d` stays. The contract gains the `list` line form for an anchored `work` match. A pending line is committed alone only when `STATUS.md` is otherwise clean; else it rides the next `STATUS.md` commit. The test adapter is written from the contract alone right after T2.
+
 ## V6 — The archive on a territory
 
 **In**
