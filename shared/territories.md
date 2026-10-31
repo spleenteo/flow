@@ -90,7 +90,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 <kind>:<identifier> — <description>
 ```
 
-**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the copy of the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` still writes `<changelog>`. A missing `<changelog>` path is left out of `search`'s `rg` call.
+**Excerpts.** The conductor writes those lines to a file in the scratch folder and passes its absolute path to `flow:docs` as the `excerpts:` header key of `search`, `descriptions` and the changelog ops. For `search` and `descriptions` the file holds the lines above; for the changelog ops, the copy of the file the changelog `read` returned. `flow:docs` takes the lines as matches, merges them with the repo's, keeps ten, and leaves its output format unchanged. The changelog ops take tone and language from the excerpts instead of `<changelog>`; `changelog-write` writes the entry to `<scratch>/CHANGELOG.md`, never `<changelog>` (§ Writes › Changelog). A missing `<changelog>` path is left out of `search`'s `rg` call.
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
