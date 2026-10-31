@@ -101,6 +101,10 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 - "One adapter invocation per step" reads as one invocation per adapter per step: territories served by different adapters can't share one Skill call.
 - A run for an unmet `## Requires` is added to the checks.
 
+**V3 — done on 2026-10-31**
+
+`territories:` in `.flow.yml` declares, per kind (`decisions`, `changelog`, `guidelines`, `lenses`, `product`, `archive`), an `adapter` skill of another plugin, a `where` and a `write` word; an undeclared kind stays in the repo. `shared/territories.md` is the contract: declaring, resolution and its stops (malformed entry, missing skill, `unmet`, `unreachable`, never a fallback to the repo), the request lines (one per line, `; `-separated pairs), the adapter skill's sections and the forbidden `context: fork` and `disable-model-invocation: true`, the five ops plus `op: none`, the repo as reference behaviour, and A10's lines on tokens and share links. `/flow:dev` resolves territories after the upgrade check with one `op: none` Skill call per adapter and lists them at opening; flow:docs, the README and the architecture document the key. A throwaway adapter written from the contract alone exposed two gaps the final review fixed: how several requests reach one adapter, and how `write name: new` returns its id. Headless runs proved that another plugin's skill is called by its qualified name: run 1 lists the three territories, run 2 (skill removed) and run 3 (unmet `where`) stop naming the territory, and without the key the opening matches the baseline. The read order did not hold: the model batches `.flow.yml` with the guidelines and changelog in one early shell call, before the adapters resolve, even after a "read only `.flow.yml`" rule was added. By a ruling it is carried to V4, where a guidelines territory makes it matter. V2's low on `step: plan` source conditions is fixed at four places.
+
 ## V4 — Reads through territories
 
 **In**
@@ -124,7 +128,7 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 - No `territories:` → the same packets, in the same place, as today.
 - Gate green.
 
-**Gotchas**: reads are not validated: `decisions-check` runs on writes (V5). Context: one adapter call per step, results capped or in a scratch file.
+**Gotchas**: reads are not validated: `decisions-check` runs on writes (V5). Carried from V3 (ruling): the read order doesn't hold headless — the model batches `.flow.yml`, the guidelines and the changelog in one early shell call, before adapters resolve. Fix here: the upgrade check matches its traces without printing any file; "read `.flow.yml` alone" becomes its own step at `skills/dev/SKILL.md` ~:116 and ~:120; the "Read if present" lines at ~:42 and ~:49 apply only after territories resolve; verify with a grep on the order of tool calls. Context: one adapter call per step, results capped or in a scratch file.
 
 ## V5 — Writes through territories
 

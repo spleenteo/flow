@@ -1,8 +1,8 @@
 ---
 status: open
 phase: slice
-slice: V3
-step: execute
+slice: V4
+step: plan
 work: doc-territories
 stacks: [generic]
 base: main
@@ -21,7 +21,7 @@ description: "Documentation territories: each kind of project document can live 
 
 - [x] V1 — the changelog adapts to the project
 - [x] V2 — guidelines as a set of sources
-- [ ] V3 — the adapter contract and its resolution
+- [x] V3 — the adapter contract and its resolution
 - [ ] V4 — reads through territories
 - [ ] V5 — writes through territories
 - [ ] V6 — the archive on a territory
@@ -35,3 +35,4 @@ description: "Documentation territories: each kind of project document can live 
 - 2026-10-31 — impact — two agents: 24 findings, 20 after merging (4 high: committed packet with external excerpts, archive links and slug check, profile on a guidelines territory, step-scoped sources vs packet cache); all applied to slices.md — V1 plan — ~15 min — —
 - 2026-10-31 — V1 close — 4 tasks, 4 commits, all passed first review; gate green; final review: 4 low; 4 lessons — V2 plan — ~25 min — —
 - 2026-10-31 — V2 close — 3 tasks + T4 check (BLOCKED by the safety classifier on printed prompts, redone as a routing table); final review: untracked-file leak fixed; gate green; 3 lessons — V3 plan — ~35 min — —
+- 2026-10-31 — V3 close — contract shared/territories.md, resolution before the profile; headless runs: adapter called by qualified name, stops name the territory, no-key baseline identical; read order carried to V4; gate green; 3 lessons — V4 plan — ~30 min — —
