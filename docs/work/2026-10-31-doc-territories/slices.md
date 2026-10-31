@@ -94,6 +94,13 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 
 **Gotchas**: `presets:` already maps `design=<skill>`; keep `territories:` separate so a territory never reads as a stack. Carried from V2's final review (low): in `skills/dev/SKILL.md` ~:297 the planner's step block depends on any `sources:` being declared instead of on a `step: plan` source; fix it while editing that file. Routing for `review`, `execute` and `close` sources was never exercised in V2's test repos.
 
+**Deviations found while planning V3**
+- A malformed `territories:` entry (unknown kind, or no `adapter` or `where`) also stops the run and names the entry.
+- `op: none` is added beside the five operations: it runs `## Requires` alone, and it is the only request V3 sends.
+- V2's low finding is fixed at ~:297 and at the same defect in the review block (~:305), the phase sources (~:269) and the impact block (~:279).
+- "One adapter invocation per step" reads as one invocation per adapter per step: territories served by different adapters can't share one Skill call.
+- A run for an unmet `## Requires` is added to the checks.
+
 ## V4 — Reads through territories
 
 **In**
