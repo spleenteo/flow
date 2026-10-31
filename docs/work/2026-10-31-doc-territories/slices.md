@@ -67,6 +67,10 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 - `execute` and `close` sources reach the runner through two new fields, `Execute sources:` and `Close sources:`, and the dispatch contract in `shared/work.md` changes.
 - A directory path matches a glob only through the glob's literal prefix; a glob starting with a wildcard never matches a directory.
 
+**V2 — done on 2026-10-31**
+
+`sources:` in `.flow.yml` lists files that must reach agents, each with a `when` that is a quoted glob or a `{step:}`/`{phase:}` value. Sources matched by path ride in the packet's `## Sources` and are matched again against the planner's `Files:` before the review. Step sources ride in a `## Sources for step: <name>` block after the packet, only for that step's dispatches. The runner gets them as `Execute sources:`/`Close sources:` fields. The skill's example uses the brace form `when: {step: plan}` rather than the plan's `[step: plan]`, by a ruling, and the README copies it. T4's check that printed prompts through `claude -p` was flagged by the safety classifier. It was BLOCKED, and by the user's answer became a routing table: which source files each dispatch carries, in packet or in instruction. All five runs pass. With no `sources:`, V2's Flow and the 57b9c30 baseline route identically. The final review found that an untracked file (a `.env`) could pass the path check and land in the committed packet. Sources must now be tracked by git (`git ls-files --error-unmatch`). The same fix round made headings repo-relative and tightened the field conditions. Four low wording nits remain logged.
+
 ## V3 — The adapter contract and its resolution
 
 **In**
@@ -88,7 +92,7 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 - Read-through: `shared/territories.md` and the README carry A10's lines and the two forbidden frontmatter keys.
 - Gate green.
 
-**Gotchas**: `presets:` already maps `design=<skill>`; keep `territories:` separate so a territory never reads as a stack.
+**Gotchas**: `presets:` already maps `design=<skill>`; keep `territories:` separate so a territory never reads as a stack. Carried from V2's final review (low): in `skills/dev/SKILL.md` ~:297 the planner's step block depends on any `sources:` being declared instead of on a `step: plan` source; fix it while editing that file. Routing for `review`, `execute` and `close` sources was never exercised in V2's test repos.
 
 ## V4 — Reads through territories
 
