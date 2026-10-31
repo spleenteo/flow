@@ -62,6 +62,11 @@ The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision
 
 **Gotchas**: packet size; a path-scoped source is a whole file and weighs on every dispatch of the slice.
 
+**Deviations found while planning V2**
+- The first stop gets one line naming the sources the packet carries and their line counts (the packet-size gotcha).
+- `execute` and `close` sources reach the runner through two new fields, `Execute sources:` and `Close sources:`, and the dispatch contract in `shared/work.md` changes.
+- A directory path matches a glob only through the glob's literal prefix; a glob starting with a wildcard never matches a directory.
+
 ## V3 — The adapter contract and its resolution
 
 **In**
