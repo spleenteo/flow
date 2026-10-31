@@ -67,6 +67,7 @@ Read `.flow.yml` in `dir`. Never create it. When an older configuration file nam
 | `changelog` | `<root>/CHANGELOG.md`. A path, or a map; see below |
 | `version_file` | `.version` (at the repo root) |
 | `areas` | none. A flow list, `areas: [engine, ui]`: the allowed values of a decision's `area`; passed to the check as `--areas` |
+| `territories` | none. Not read here: the conductors resolve territories and call their adapters ([contract](../../shared/territories.md)); this skill works on repo files and on what a request hands it |
 
 `package.json` is not touched: its `version` tracks the package, not the application.
 
