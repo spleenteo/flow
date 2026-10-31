@@ -18,3 +18,9 @@ Rules learned while executing, one per line. Every plan and packet carries them.
 - An instruction meant for a tool the conductor invokes goes inside the block the tool receives; a rule addressed to the conductor ("never copy it") does not reach the tool's prompt.
 - A read the skill only mentions in a parenthesis is skipped headless; state it as an obligation at the step, with its condition.
 - On macOS, `mktemp -d` ignores `TMPDIR`; a check that expects scratch files under `$TMPDIR` checks "outside the repo" instead.
+- An adapter written from the contract alone finds the open points only if its writer lists every guess; turn each into a contract rule and re-align the adapter before any caller relies on it.
+- A request key that names a folder (`scratch:`) must say which folder at every call site; "that folder" next to a session folder is read as the session folder.
+- A composed file name built from "the file's name" inherits whatever name the caller chose; fix the caller's copy name in the contract, or build the name from the identifier.
+- `git diff --quiet [HEAD] -- <path>` exits 0 for an untracked or missing file; guard a "commit it alone" step with `git ls-files --error-unmatch <path>`.
+- In a user setup with `defaultMode: auto`, headless runs without a mode flag start in `auto` and `--allowedTools` stops binding; a zero-denial check there proves nothing about the allow-list.
+- An executor redoing a commit split must re-stage from its edits, never `git checkout --` them; a lost edit then shows up only as a report claim no commit holds.
