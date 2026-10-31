@@ -40,6 +40,10 @@ Shape: A in [shaping.md](shaping.md) (A1–A10). Breadboard skipped: no new plac
 - The work-folder lookup gets the `<dir>/` prefix `flow:docs` requires on every `rg` path; no match continues from the git facts, several matches return `FAILED`.
 - `shared/work.md` line 8 ("Keys this file uses") also gains `changelog`, since archive step 2 reads it.
 
+**V1 — done on 2026-10-31**
+
+The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision`, `language`, `decisions: lines | inline`); `flow:docs` defines `<changelog>` once and every reader (archive step 2, the dev key list, README, architecture) points to it. The work folder is found by `rg -l '^work: <slug>$' <dir>/<root>/work/*/STATUS.md` (no match: git facts only; several: FAILED). In scratchpad repos the map config gave an Italian entry with one `**Job**` and one `**Why**` line joining two decisions with ` · `; propose for `menu` read only its own dated folder; the string and no-key configs matched main's Flow structure line for line. The entry template was left untouched, which kept the default identical. All four tasks passed on the first review; no rulings. Left low: the lookup lacks `2>/dev/null` for an empty `work/`; the `<changelog>` sentence omits its default; archive's `rg "<slug>" <changelog>` still matches `mobile-menu` for `menu` (carried into V6).
+
 ## V2 — Guidelines as a set of sources
 
 **In**
@@ -133,7 +137,8 @@ Shape: A in [shaping.md](shaping.md) (A1–A10). Breadboard skipped: no new plac
 - Inbound links to the work's folder (from decisions, the changelog, other works) become plain text naming where it went (`archived on <territory>: <name>`), never a share link, so the Gate's link check stays green.
 - The slug check at opening and the opening memory search also query the archive territory (`list`, `search`).
 - With no `archive` territory, `/flow:archive` works as today.
-- Docs: `shared/work.md` § Archive, `docs/architecture.md`, `skills/dev/SKILL.md` where it cites `archived.md`. The site's file tree (`site/index.html`) shows the default and stays.
+- Docs: `shared/work.md` § Archive, `docs/architecture.md`, `skills/dev/SKILL.md` where it cites `archived.md`.
+- Archive step 2's `rg "<slug>" <changelog>` matches longer slugs (`mobile-menu` for `menu`): anchor it on the Work bullet (from V1's final review). The site's file tree (`site/index.html`) shows the default and stays.
 
 **Done**
 - In the test repo, archiving a closed work copies its files into a folder of the external territory and removes the local one in one commit; `archived.md` is untouched and no `deny` is added; a decision linking the work now names it in plain text; the Gate's link check is green.
