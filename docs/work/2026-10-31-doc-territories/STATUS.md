@@ -1,6 +1,6 @@
 ---
 status: open
-phase: shaping
+phase: slicing
 slice: null
 step: null
 work: doc-territories
@@ -25,3 +25,4 @@ description: "Documentation territories: each kind of project document can live 
 
 <!-- date — step — done — remaining — wall-clock — cost -->
 - 2026-10-31 — frame — home opened, frame written from external source material — shaping — ~15 min — —
+- 2026-10-31 — shaping — shape A selected (conductor-side adapters); fidelity check: 8 findings, all applied — slicing (breadboard skipped: no new places, changes are to existing skills) — ~50 min — —
