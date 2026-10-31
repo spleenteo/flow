@@ -1,0 +1,128 @@
+# Territories
+
+Flow ships no adapter. A project that keeps a kind of document somewhere other than the repo declares it in `.flow.yml`, and an adapter skill from another plugin reads, writes and searches there. The adapter runs in the conductor's own session, never in a subagent and never behind `flow:docs` ([decision](../docs/decisions-log/2026-10-31-territory-adapters-run-in-the-conductor.md)). `flow:docs` stays on repo files.
+
+This file is the whole contract: someone who has read only it can write an adapter, and a conductor can call one.
+
+## Declaring
+
+`territories:` in `.flow.yml` holds one entry per kind, block style, each value a flow map:
+
+```yaml
+territories:
+  decisions: {adapter: acme-wiki:territory, where: ENG/decisions, write: comment}
+  product: {adapter: acme-wiki:territory, where: PROD/context, write: direct}
+```
+
+The kinds, and where an undeclared kind lives (the repo, under `<root>/`, as without `territories:`):
+
+| Kind | Undeclared, it is |
+|---|---|
+| `decisions` | `<root>/decisions-log/` |
+| `changelog` | the `changelog` path |
+| `guidelines` | `<root>/development-guidelines.md` |
+| `lenses` | `<root>/impact-lenses.md` |
+| `product` | nothing: no product document is read |
+| `archive` | `<root>/work/archive/`, with `archived.md` |
+
+`work/` and `.version` are never territories. Any other kind is a malformed entry.
+
+Each entry has three fields:
+
+- `adapter` (required): the adapter skill's name as the session lists it, `<plugin>:<skill>` for a plugin's skill.
+- `where` (required): the place, in the adapter's own terms (a path, a space and collection, a project key). Flow never interprets it.
+- `write` (optional): a word the adapter's `write` operation defines. Absent, the adapter's default applies.
+
+**Changelog.** A `changelog` territory takes the place of the `changelog` path. `labels`, `language` and `decisions` still apply.
+
+**No presets.** Territories never go through `presets:` or `stack_presets`. `presets:` maps a stack to a skill; a territory is a place for documents, and the two keys stay apart so a territory is never read as a stack.
+
+Without `territories:`, nothing is read, resolved or shown, and every kind stays in the repo.
+
+## Resolution
+
+The conductor resolves territories once, when it opens or resumes a work: after the upgrade check, before it reads the profile (the profile may read a `guidelines` territory).
+
+- It reads `.flow.yml` and takes the adapter name of each entry, then invokes the adapter with the Skill tool, by that name, never by path.
+- **One invocation per adapter per step.** The args hold the step's request lines for every territory that adapter serves. Territories served by different adapters get one invocation each.
+- **Stops.** The run stops with one message that names the territory, and no work is opened or resumed, on: a malformed entry (unknown kind, or no `adapter` or `where`); an adapter the session doesn't list (exact name); an unmet `Requires`; any operation that returns `unreachable`. It never falls back to the repo.
+
+**Request line.** Several per territory are allowed. Fields are separated by `; `, list values by `, ` (not by bare commas, since keywords may hold commas):
+
+```text
+op: search; kind: decisions; where: ENG/decisions; write: comment; keywords: cart, total; files: app/models/cart.rb
+```
+
+Every request carries `op`, `kind` and `where`; `write` is carried when declared; the other fields depend on the operation (see [Operations](#operations)).
+
+**Returns.** For each request, in order, the adapter returns a block headed `<kind>:`, followed by the operation's return. `search` and `list` return at most ten lines. A longer result goes to a scratch file instead, and the adapter returns one line, `<kind>: results: <absolute path>`.
+
+**Requires before every operation.** The adapter checks its `Requires` before any operation. If one is unmet, it returns `unmet: <what>` and does nothing else.
+
+**`op: none`.** The request that runs `Requires` alone, with nothing read or written. It returns `ready` or `unmet: <what>`. It is the only request the conductor sends when it opens a work.
+
+## The adapter skill
+
+An adapter is an ordinary skill in a plugin. Its frontmatter holds `name` and `description`; `user-invocable: false` is allowed. Two keys are forbidden ([skills reference](https://code.claude.com/docs/en/skills)):
+
+- never `context: fork`: the skill would run in a subagent, which brings back the fork-to-connector path the decision rules out;
+- never `disable-model-invocation: true`: the Skill tool could not invoke it.
+
+The body has three sections, in this order.
+
+### Requires
+
+What the adapter needs to work: a connector or tool it must be able to call, a credential in its own user configuration (see [Tokens, per-user values and links](#tokens-per-user-values-and-links)), a `where` that exists. Say how each is checked per `where`, and what the adapter says when one is unmet: `unmet: <what is missing and how to fix it>`, naming the item.
+
+### Fields
+
+A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `status`, `description`, `touches`, `work`, `area`, `superseded_by` and `resolved_by`.
+
+- If the service has native fields, map them to these names.
+- Otherwise, keep a key/value table at the top of the document, with list values comma-separated and `null` written out:
+
+```text
+| Field | Value |
+|---|---|
+| kind | decision |
+| status | active |
+| touches | app/models/cart.rb, app/views/cart |
+| superseded_by | null |
+```
+
+The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) must round-trip through `read` and `write` unchanged.
+
+### Operations
+
+Every operation runs `Requires` first and may return `unmet: <what>`, or `unreachable: <reason>` when the place can't be reached.
+
+| Operation | Input | Returns |
+|---|---|---|
+| `op: none` | none | `ready` or `unmet: <what>` |
+| `op: read` | `name` (optional; absent, the document at `where`, for the single-document kinds `guidelines`, `lenses`, `product`, `changelog`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
+| `op: write` | `name: <id \| new>`; `file: <absolute path>`; the fields as frontmatter in that file | `written`, or `proposed <link>` |
+| `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
+| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <fields>`, or `none` |
+| `op: archive` | `folder: <absolute path>` | `archived <name>`, or `proposed <link>` |
+
+- `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
+- `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
+- Scratch files come from `mktemp -d`, outside the repo, and are never committed.
+- The adapter defines its `write` words (for example `direct`, which writes in place, and `comment`, which proposes) and which one is the default when `write` is absent. It documents them in the body of its skill.
+
+## The repo
+
+The reference behaviour: what an undeclared kind does, and what every adapter stands in for.
+
+- **Requires**: none.
+- **Fields**: YAML frontmatter.
+- **`read`**: the file itself.
+- **`write`**: writes the file and returns `written`. The caller commits, as today.
+- **`search` and `list`**: `flow:docs` `op: search` and `op: descriptions`.
+- **`archive`**: the move `/flow:archive` makes.
+
+## Tokens, per-user values and links
+
+- Tokens and per-user values live in the adapter plugin's own [user configuration](https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration), never in `.flow.yml` or in any file of the repo.
+- `where` values and returned links are identifiers or login-only links, never public share links.
+- Flow doesn't enforce this. Keeping to it is the user's responsibility.
