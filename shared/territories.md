@@ -79,7 +79,6 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 | Impact; slice packet; resume at `step: plan` | a matched source naming a territory | `op: read` with `name` |
 | After the plan, before the review dispatch | `decisions` | descriptions again, with the planner's `Files:` |
 | After the plan, before the review dispatch | a newly matched source naming a territory | `op: read` with `name` |
-| Review | `decisions` | descriptions again, with the planner's `Files:` |
 | Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
 | Close, changelog step | `changelog` | `op: read` |
 
@@ -103,7 +102,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 sources: [{territory: product, name: voice, when: ["app/**"]}]
 ```
 
-An undeclared kind is skipped and named. There is no `git ls-files` check. The packet heading is `### <kind>:<name>`, and the runner gets the scratch path of the `read`.
+An undeclared kind is skipped and named. There is no `git ls-files` check. The packet heading is `### <kind>:<name>`, and the runner gets the path of its copy in the scratch folder.
 
 **Product.** For `framing-doc` and `shaping` only, a block named `` `## Product context` `` carries the `read` text verbatim, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. Undeclared or `missing`: nothing.
 
