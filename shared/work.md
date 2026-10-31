@@ -203,7 +203,7 @@ Two environment variables beat all of this, and Flow can't see past them: `CLAUD
 
 **Ledger.** `<work dir>/V<n>-ledger.md`, written by the slice runner (the conductor in the fallback) and committed with the close.
 
-- The head, in one write: first line `# Ledger — V<n>`, second line the result of `printenv CLAUDE_CODE_SUBAGENT_MODEL_FORCE CLAUDE_CODE_SUBAGENT_MODEL`, run once at the start of execute.
+- The head, in one write: first line `# Ledger — V<n>`, second line the result of `printenv CLAUDE_CODE_SUBAGENT_MODEL_FORCE CLAUDE_CODE_SUBAGENT_MODEL`, run once at the start of execute, a third line `Packet: <path>` when the packet is outside the work folder (the path is the `Packet:` field of the instruction).
 - Two writes per task. At the first executor return that carries commits: its line `- <task> · <agent> · <model> · <outcome> · <commits>` and its report, with any earlier return of the task held until then. When the task passes: every later line of the task in order (each review, each fix dispatch with its report), then `- T<n>: complete`. A task reopened after `complete` gets one more write when it passes again. Before a `STOP` returns, the lines held so far go in one write. The model is the passed value, or `definition: <alias>` when none was passed, plus `forced` when the variable is set.
 - `Ruling: <what> — <why> — <cost if wrong>`, written at once as its own write: a ruling on findings, a split (`T4a`/`T4b`), and the user's answer to a `STOP`, written when the runner is dispatched again.
 - Each agent's report is appended under its line, trimmed to status, commits, tests run, `Servers:`, concerns.
