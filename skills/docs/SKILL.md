@@ -64,13 +64,15 @@ Read `.flow.yml` in `dir`. Never create it. When an older configuration file nam
 | Key | Default |
 |---|---|
 | `root` | `docs` |
-| `changelog` | `<root>/CHANGELOG.md` |
+| `changelog` | `<root>/CHANGELOG.md`. A path, or a map; see below |
 | `version_file` | `.version` (at the repo root) |
 | `areas` | none. A flow list, `areas: [engine, ui]`: the allowed values of a decision's `area`; passed to the check as `--areas` |
 
 `package.json` is not touched: its `version` tracks the package, not the application.
 
-**Language**: that of the existing changelog entries. For a new changelog, that of the rest of `<root>/`.
+**The `changelog` map**: keys `path` (`<root>/CHANGELOG.md`), `labels.work` (`Work`), `labels.decision` (`Decision`), `language` (unset), `decisions` (`lines`). A missing key takes its default; unknown keys are ignored. Flow style on one line and block style are both accepted. `decisions` holds `lines` or `inline`; anything else: `FAILED: changelog.decisions must be lines or inline`, nothing written. A string value is the `path`. Below, `<changelog>` is the changelog's path: the string value, or the map's `path`.
+
+**Language**: `language` of the `changelog` map when set. Otherwise that of the existing changelog entries; for a new changelog, that of the rest of `<root>/`. It sets the prose of the entry and the intro of a new changelog, not the labels, and not the commit message.
 
 ## Op `changelog-propose`
 
@@ -84,7 +86,7 @@ git -C <dir> diff <base>..HEAD --stat
 git -C <dir> status --short
 ```
 
-2. Read the changelog: existing entries set tone and detail. Read the version file for the current number; if it is missing, use `current`; if that is missing too, `NEEDS: current`. Read the work's `STATUS.md` and `slices.md` in `<root>/work/<work>/`: the "V<n> — done on" sections say what really happened.
+2. Read `<changelog>`: existing entries set tone and detail. Read the version file for the current number; if it is missing, use `current`; if that is missing too, `NEEDS: current`. Read the work's `STATUS.md` and `slices.md` in its folder, found with `rg -l '^work: <slug>$' <dir>/<root>/work/*/STATUS.md` (dated or not; never a glob on the folder name, which also matches longer slugs). No match: continue from the git facts alone. More than one match: `FAILED: several work folders for <slug>`. The "V<n> — done on" sections say what really happened.
 3. `release` names the releases. With a split, each slug is one release: attribute the commits to it by their subjects and the files they touch. Versions chain: the second release builds on the first.
 4. Apply the rule. Not a negotiation.
 
@@ -130,10 +132,10 @@ One or two sentences: what changes and why it was done.
 - **Date**: the day of writing, `YYYY-MM-DD`, not when the work started: the merge follows on the same branch.
 - **Title**: the confirmed `title`. It says what changed for the reader, not the branch name. *"The calendar no longer crashes"*, not *"fix/calendar-null-technician"*.
 - **Bullets**: a bold label naming the concept, then a plain sentence. No commit list: forty commits still make four bullets.
-- **Work**: the work's slug in `<root>/work/`. It's the hook that survives archiving: `rg "<slug>" <changelog>` must find the entry.
-- **Decision**: links to the `<root>/decisions-log/` files that explain why; find them with `rg -l '^work: <slug>$' <dir>/<root>/decisions-log/`. The link path is relative to the changelog file (`decisions-log/<file>` when the changelog is `<root>/CHANGELOG.md`; the template above shows the default root). Check the file exists before linking. If the work took decisions no file records, report it under `missing decisions`: a decision is missing, but you don't write it. Omit the bullet if the repo has no `decisions-log/`.
+- **Work**: the work's slug in `<root>/work/`; its label is `labels.work`. It's the hook that survives archiving: `rg "<slug>" <changelog>` must find the entry.
+- **Decision**: its label is `labels.decision`. With `lines`, one bullet per decision, as in the template; with `inline`, one bullet holding the label and every link joined by ` · ` (space, U+00B7, space). Links to the `<root>/decisions-log/` files that explain why; find them with `rg -l '^work: <slug>$' <dir>/<root>/decisions-log/`. The link path is relative to the changelog file (`decisions-log/<file>` when the changelog is `<root>/CHANGELOG.md`; the template above shows the default root). Check the file exists before linking. If the work took decisions no file records, report it under `missing decisions`: a decision is missing, but you don't write it. Omit the bullet if the repo has no `decisions-log/`.
 - **No "files changed" section**: this is a register, not a diff.
-- **No operational instructions**: migrations, backfills and secrets don't go here. If the work's plans (`<root>/work/<dir-of-work>/V<n>-plan.md`) or its `STATUS.md` say something must be done by hand after the merge, report it under `manual after merge`, never in the changelog.
+- **No operational instructions**: migrations, backfills and secrets don't go here. If the work's plans (`V<n>-plan.md`) or its `STATUS.md`, in the folder found by the lookup of `changelog-propose`, say something must be done by hand after the merge, report it under `manual after merge`, never in the changelog.
 - **No emoji**, unless the feature itself uses one.
 - **Split**: one entry per release, in order, newest on top; each carries its own slug in the **Work** bullet.
 
@@ -167,7 +169,7 @@ With a split, every line carries the same `<sha>`.
 
 Search before reading, then read only what matches.
 
-- `layout: repo`: `rg -il "<keyword>" <dir>/<changelog> <dir>/<root>/decisions-log/ --glob '*.md' --glob '!README.md' <dir>/<root>/work/archived.md`, one keyword at a time or as an alternation. Never `<root>/work/archive/`.
+- `layout: repo` (`<dir>/<changelog>` is the changelog's path): `rg -il "<keyword>" <dir>/<changelog> <dir>/<root>/decisions-log/ --glob '*.md' --glob '!README.md' <dir>/<root>/work/archived.md`, one keyword at a time or as an alternation. Never `<root>/work/archive/`.
 - `layout: project`: under `dir`, `rg -il "<keyword>" --glob '*/STATUS.md' --glob '*/decisions/*.md' --glob '*/lessons.md' <dir>`.
 
 `rg` always gets an explicit path. Read the matching files, and for each keep the lines that bear on the keywords.
