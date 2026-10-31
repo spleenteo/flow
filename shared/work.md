@@ -359,7 +359,7 @@ Old traces are what an earlier version of this plugin left behind under other na
 **repo.** Looked for on the default branch (the target of Closing a work, step 4), not in the checkout, by one `bash` block that prints names or lines only (`<default>` is that branch). `.flow.yml` is listed first so its `root:` wins; the default root is `docs`:
 
 ```bash
-r=$(git grep -h '^root:' <default> -- .flow.yml .devflow.yml | head -n 1); r=${r#root:}; r=${r# }; r=${r:-docs}
+r=$({ git grep -h '^root:' <default> -- .flow.yml; git grep -h '^root:' <default> -- .devflow.yml; } | head -n 1); r=${r#root:}; r=${r# }; r=${r:-docs}
 git cat-file -e <default>:.devflow.yml 2>/dev/null && echo .devflow.yml
 git grep -l '^stack:' <default> -- .flow.yml .devflow.yml
 git grep -l -F '/devflow-archive' <default> -- "$r/work/archived.md"
@@ -368,6 +368,7 @@ git grep -n -E '/devflow|/projectflow|\.devflow\.yml' <default> -- CLAUDE.md .cl
 git grep -n -w -E 'devflow|projectflow' <default> -- .claude/settings.json
 git ls-tree --name-only <default> .claude/skills/
 for b in $(git for-each-ref --format='%(refname:short)' refs/heads/work/); do git cat-file -e "$b:.devflow.yml" 2>/dev/null && echo "$b"; done
+echo "upgrade check: done"
 ```
 
 No file is printed in this check: the output carries names and matching lines, never a file's content.
