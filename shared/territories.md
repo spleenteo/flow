@@ -131,7 +131,7 @@ Every request line carries `op`, `kind` and `where` (§ Resolution); each write 
 
 **`## Tests` on a territory.** At `/flow:dev`'s § Profile › Writing (`skills/dev/SKILL.md`), the two lines go into the conductor's copy of the guidelines `read`: at the start of `## Tests`, or in a new section. Then `op: write; kind: guidelines; where: <where>; file: <copy>`, with no `name`. While `proposed`, the level holds for this session only.
 
-**Returns.** `written <id>` is reported as `<kind>:<id>`, a plain `written` (single document) as `<kind>:document`. `proposed <link>` adds the line `- YYYY-MM-DD — <kind>:<name> — <link>` under `## Pending proposals` in `STATUS.md`, a section before `## Log`, created when missing. `<name>` is the id, the composed file's name without `.md` for `new`, or `document` for a single document. Outside a work, the link is only reported.
+**Returns.** `written <id>` is reported as `<kind>:<id>`, a plain `written` (single document) as `<kind>:document`. `proposed <link>` adds the line `- YYYY-MM-DD — <kind>:<name> — <link>` under `## Pending proposals` in `STATUS.md`, a section before `## Log`, created when missing. `<name>` is the id, the composed file's name without `.md` for `new`, or `document` for a single document. Outside a work, the link is only reported. On `FAILED: <id> exists`, the conductor stops that write, reports the id and the composed path, and adds nothing to `STATUS.md`; it does not retry.
 
 **The pending line.** Before the append, the conductor runs `git -C <repo root> diff --quiet HEAD -- <work dir>/STATUS.md`. If it exits 0, the line is committed alone: `git -C <repo root> add <work dir>/STATUS.md`, then `git -C <repo root> commit -m "Note a pending proposal on <kind>" -- <work dir>/STATUS.md`. Otherwise the line is appended but not committed, and the message says so (it goes with the next `STATUS.md` commit). The work close's report (`/flow:dev` Step 6 move 5; the work reference's § Closing a work step 5) adds `Pending proposals: <kind>:<name> <link>, … | none`.
 
@@ -164,7 +164,7 @@ A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `st
 | superseded_by | null |
 ```
 
-`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out. It writes `<scratch>/<name>.md` (`document.md` for a single document), the frontmatter followed by one blank line. A `write` file with no frontmatter (the changelog, guidelines) is stored as it is, with no fields table. A ` | ` inside a table value is written `\|` and read back as ` | `.
+`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out. It writes `<name>.md` into a `mktemp -d` folder of its own (`document.md` for a single document), the frontmatter followed by one blank line. A `write` file with no frontmatter (the changelog, guidelines) is stored as it is, with no fields table. A ` | ` inside a table value is written `\|` and read back as ` | `.
 
 The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) must round-trip through `read` and `write` unchanged.
 
@@ -176,15 +176,15 @@ Every operation runs `Requires` first and may return `unmet: <what>`, or `unreac
 |---|---|---|
 | `op: none` | none | `ready` or `unmet: <what>` |
 | `op: read` | `name` (optional; absent, the document at `where`, for the single-document kinds `guidelines`, `lenses`, `product`, `changelog`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
-| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>` |
+| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>`, or `FAILED: <id> exists` |
 | `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
 | `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`, or `none` |
 | `op: archive` | `folder: <absolute path of the work's folder>` | `archived <name>` (`<name>`: the archived document's identifier), or `proposed <link>` |
 
-- An unknown `write` word returns `unmet: write <word>`. `write` creates documents inside an existing `where`; a missing `where` is `unmet`.
-- `name: new`: the new document's identifier is the composed file's name without `.md`, returned as `written <id>`; an existing document with that identifier returns `FAILED: <id> exists`.
+- A request is checked in order: the `write` word, then the identifier. An unknown `write` word returns `unmet: write <word>`; it is checked with `Requires`, so a wrong word in `.flow.yml` already returns it at resolution, `op: none` included. `write` creates documents inside an existing `where`; a missing `where` is `unmet`.
+- `name: new`: the new document's identifier is the composed file's name without `.md`, returned as `written <id>`; an existing document with that identifier returns `FAILED: <id> exists`, and with `comment`, so does an open proposal with it.
 - `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it.
-- `proposed <link>`: the link is absolute (a URL, or `file://` with an absolute path) and points at the proposal. Until it is accepted, `read` and `list` return the document as it was (a new one is absent).
+- `proposed <link>`: the link is absolute (a URL, or `file://` with an absolute path) and points at the proposal. Until it is accepted, `read` and `list` return the document as it was (a new one is absent). A `read` of a name that exists only as a proposal returns `missing`.
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
 - `list` lines use the § Fields names, list values comma-separated. The conductor puts a returned block in a scratch file and matches `work` anchored: `rg '(— |; )work: <slug>(;|$)' <file> | awk '{print $1}'`.
