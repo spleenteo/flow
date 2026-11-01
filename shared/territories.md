@@ -72,7 +72,9 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 | Moment | Kind | Request |
 |---|---|---|
 | Opening or resume, before the profile | `guidelines` | `op: read` |
-| Opening, Step 1's memory search | `decisions`, `changelog` | `op: search`, with the request's keywords |
+| Opening, Step 1's memory search | `decisions`, `changelog`, `archive` | `op: search`, with the request's keywords |
+| Opening, Step 1's slug check | `archive` | `op: list`, matched on `work` anchored (§ Operations) |
+| `/flow:archive` step 2 | `changelog`, `decisions` | `changelog`: `op: read`; `decisions`: `op: list` |
 | Resume (standing documents) | `decisions` | descriptions, keywords from `STATUS.md`'s `description:` |
 | Impact; slice packet; resume at `step: plan` | `decisions` | descriptions with the slice's files |
 | Impact; slice packet; resume at `step: plan` | `lenses` | `op: read` |
@@ -119,6 +121,7 @@ What the conductor sends through an adapter for a declared kind, and what comes 
 | Close, changelog step | `decisions` | `op: list`, when `decisions` is declared (for the ids) |
 | Close, changelog step | `changelog` | `op: write` with no `name`, when `changelog` is declared |
 | Profile writes the `## Tests` lines | `guidelines` | `op: write` with no `name` |
+| Archive (`/flow:archive`) | `archive` | `op: archive` with `folder` |
 
 Every request line carries `op`, `kind` and `where` (§ Resolution); each write adds `file: <absolute path>`, and `write` when declared. One invocation per adapter per step still holds: the other kinds that adapter serves get `op: none`.
 
@@ -131,6 +134,8 @@ Every request line carries `op`, `kind` and `where` (§ Resolution); each write 
 **Changelog.** At the close, whenever `decisions` is declared, the invocation also sends `op: list; kind: decisions; where: <where>` (in the same invocation when `decisions` is on the same adapter, else in its own), so the **Decision** line is kept even when only `decisions` is a territory. `op: write; kind: changelog` is sent only when `changelog` is declared. The conductor puts the block in a scratch file and matches `work` anchored, `rg '(— |; )work: <slug>(;|$)' <file> | awk '{print $1}'`, which gives `decision-ids: decisions:<id>, …`. `changelog-write`, with `scratch:`, inserts the entry into a copy of `excerpts` (or under a new two-line intro) at `<scratch>/CHANGELOG.md`, writes the version file and commits it alone: `git -C <dir> add <version_file>`, then `git -C <dir> commit -m "Bump the version to vX.Y.Z" -- <version_file>`. It returns `Recorded v<version> — <title> — <sha>; changelog: <absolute path>; missing decisions: …; manual after merge: …`. Then `op: write; kind: changelog; where: <where>; file: <path>`, with no `name`. A territory decision is named `` `decisions:<id>` ``, never linked, since a `file://` link in a repo changelog fails the Gate. With `decision-ids`, the **Decision** bullet stays even without `decisions-log/`. On a changelog territory, a repo decision is named `` `<root>/decisions-log/<file>` ``.
 
 **`## Tests` on a territory.** At `/flow:dev`'s § Profile › Writing (`skills/dev/SKILL.md`), the two lines go into the conductor's copy of the guidelines `read`: at the start of `## Tests`, or in a new section. Then `op: write; kind: guidelines; where: <where>; file: <copy>`, with no `name`. While `proposed`, the level holds for this session only.
+
+**Archive.** With `archive` declared, `/flow:archive` sends `op: archive; kind: archive; where: <where>[; write: <word>]; folder: <absolute path of <root>/work/<dir>>`, with `op: none` lines for the adapter's other declared kinds. The adapter keeps the folder as one container named `<dir>`, one document per file, each file as it is (frontmatter included, no fields table); subfolders become nested containers. It returns `archived <name>` (`<name>` is the container's identifier) or `proposed <link>`. Re-running on an already archived `<dir>` replaces the territory copy with the folder as it is now and returns `archived <name>`; re-running on an open proposal replaces the proposal's content and returns the same `proposed <link>`, never a second one. On `proposed`, nothing is removed or rewritten, and `- YYYY-MM-DD — archive:<dir> — <link>` goes under the work's `## Pending proposals` as below, unless `STATUS.md` already holds `— archive:<dir> — `, in which case the append is skipped; the commit message is `Note a pending proposal on archive`. Whenever `territories:` is declared (any kind), `/flow:archive` reads this contract and makes the session scratch folder first; its step 2 sends one invocation per adapter (§ Reads), and it stops as § Resolution says, with nothing archived. The git steps (the clean check, the censuses, the removal, the text that replaces inbound links) are the work reference's § Archive, repo, on a territory (`shared/work.md`).
 
 **Returns.** `written <id>` is reported as `<kind>:<id>`, a plain `written` (single document) as `<kind>:document`. `proposed <link>` adds the line `- YYYY-MM-DD — <kind>:<name> — <link>` under `## Pending proposals` in `STATUS.md`, a section before `## Log`, created when missing. `<name>` is the id, the composed file's name without `.md` for `new`, or `document` for a single document. Outside a work, the link is only reported. On `FAILED: <id> exists`, the conductor stops that write, reports the id and the composed path, and adds nothing to `STATUS.md`; it does not retry.
 
@@ -169,6 +174,8 @@ A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `st
 
 The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) must round-trip through `read` and `write` unchanged.
 
+On kind `archive`, the container's fields are those of its `STATUS.md` frontmatter (`status`, `work`, `description`, …), read from the archived copy; the files inside keep their own frontmatter untouched.
+
 ### Operations
 
 Every operation runs `Requires` first and may return `unmet: <what>`, or `unreachable: <reason>` when the service doesn't answer.
@@ -180,11 +187,12 @@ Every operation runs `Requires` first and may return `unmet: <what>`, or `unreac
 | `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>`, or `FAILED: <id> exists` |
 | `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
 | `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`, or `none` |
-| `op: archive` | `folder: <absolute path of the work's folder>` | `archived <name>` (`<name>`: the archived document's identifier), or `proposed <link>` |
+| `op: archive` | `folder: <absolute path of the work's folder>`; the container is named `<dir>`, the folder's name | `archived <name>` (`<name>`: the container's identifier; a re-run replaces the copy and returns it again), or `proposed <link>` |
 
 - A request is checked in order: the `write` word, then the identifier. An unknown `write` word returns `unmet: write <word>`; it is checked with `Requires`, so a wrong word in `.flow.yml` already returns it at resolution, `op: none` included. `write` creates documents inside an existing `where`; a missing `where` is `unmet`.
 - `name: new`: the new document's identifier is the composed file's name without `.md`, returned as `written <id>`; an existing document with that identifier returns `FAILED: <id> exists`, and with `comment`, so does an open proposal with it.
-- `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it.
+- `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it. On kind `archive`, `list` lines carry `status` and `work` only, with `description` last.
+- `archive` re-run: on an already archived `<dir>`, the adapter replaces the copy; on an open proposal, it replaces the proposal's content and returns the same `proposed <link>`. A proposal stays out of `list` and `search` until accepted. On kind `archive`, `list` and `search` return one line per container, identifier `<dir>`, with the fields of its `STATUS.md` frontmatter.
 - `proposed <link>`: the link is absolute (a URL, or `file://` with an absolute path) and points at the proposal. Until it is accepted, `read` and `list` return the document as it was (a new one is absent). A `read` of a name that exists only as a proposal returns `missing`.
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
