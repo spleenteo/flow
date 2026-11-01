@@ -2,7 +2,7 @@
 status: open
 phase: slice
 slice: V8
-step: execute
+step: null
 work: doc-territories
 stacks: [generic]
 base: main
@@ -26,7 +26,7 @@ description: "Documentation territories: each kind of project document can live 
 - [x] V5 — writes through territories
 - [x] V6 — the archive on a territory
 - [x] V7 — cleanup from V6's final review
-- [ ] V8 — a leaner conductor, and the audit's lows
+- [x] V8 — a leaner conductor, and the audit's lows
 
 ## Log
 
@@ -43,3 +43,4 @@ description: "Documentation territories: each kind of project document can live 
 - 2026-11-01 — V6 close — archive on a territory (op: archive, guarded git rm, inbound links as plain text, slug check and search on the archive territory); runner died on an expired login and resumed from the ledger; gate green; follow-ups logged — work close — ~70 min — —
 - 2026-11-01 — audit — Fable read of the whole change: 26 findings (3 high, 11 medium, 12 low), report in audit-fable.md; V7 widened to the highs and mediums except M6; V8 added for M6 and the lows — V7 plan revision — ~15 min — —
 - 2026-11-01 — V7 close — audit highs and mediums fixed (version committed after the adapter write, pending archive line restored, closed-work route and merge offer, grill hands results back, runner stops on unreadable packet); gate green; lows carried to V8 — V8 plan — ~45 min — —
+- 2026-11-01 — V8 close — conductor 10909 → 10438 words, rules given one home in the contract and work reference, audit lows fixed; runner resumed after a network error; gate green after one fix round — manual test, then work close — ~50 min — —
