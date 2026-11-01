@@ -236,7 +236,7 @@ Two environment variables beat all of this, and Flow can't see past them: `CLAUD
    6. Write. Same skill, `op: changelog-write` (with `layout`, `dir`, `work`, `base`, `release`, and `current` and `excerpts` when sent before; with a `changelog` territory, also `scratch: <a fresh mktemp -d "<session scratch folder>/w.XXXXXX">`; with `decisions` declared, `decision-ids: decisions:<id>, …` from the match above), plus `level: <minor | patch | major>` and `title: "<title>"` per release, in the order of `release` and as the user saw them (with a split: `level: minor, patch`, `title: "First" | "Second"`). `major` only if the user confirmed it.
    7. Handle the answer, of the proposal and of the write alike. `NEEDS: <field>`: ask the user for it and resend the request. `FAILED: <reason>`: report it and stop; nothing was written. With `scratch`, after the write returns, make the adapter `write` before reporting: `op: write; kind: changelog; where: <where>[; write: <word>]; file: <the changelog: path>`, with no `name`; nothing is handed to the adapter on `NEEDS:` or `FAILED:`. Its answer: `written` is reported as `changelog:document`; `proposed <link>` adds `- YYYY-MM-DD — changelog:document — <link>` under `## Pending proposals`, with the check and the commit of § Decisions › **On a territory**, message `Note a pending proposal on changelog`; `FAILED: …` is reported and added nowhere.
    8. Report each returned line `Recorded v<version> — <title> — <sha>; changelog: <absolute path>; missing decisions: …; manual after merge: …` (the `changelog:` path only with `scratch`): the version recorded, the decisions the work took that no file records, the manual steps for after the merge. Say that `/flow:archive` comes next.
-3. **Archive.** `/flow:archive`, following [Archive, repo](#archive-repo), committed on the branch.
+3. **Archive.** `/flow:archive`, following [Archive, repo](#archive-repo), or [Archive, repo, on a territory](#archive-repo-on-a-territory) when an `archive` territory is declared, committed on the branch.
 4. **Merge.** Find the target:
    1. `git symbolic-ref refs/remotes/origin/HEAD`, with `refs/remotes/origin/` stripped;
    2. else the work's `base:`;
@@ -251,7 +251,7 @@ Two environment variables beat all of this, and Flow can't see past them: `CLAUD
    ```
 
    With `merge: pr`, propose a pull request instead and merge nothing. A request from the user overrides either. Push and tag each need their own ok. The branch is deleted only on request.
-5. **Report.** The conductor reports the work as its own exit step says, including what was merged, pushed or tagged, or that nothing was, and, when `territories:` is declared, one line `Pending proposals: <kind>:<name> <link>, … | none`.
+5. **Report.** The conductor reports the work as its own exit step says, including what was merged, pushed or tagged, or that nothing was, and, when `territories:` is declared, one line `Pending proposals: <kind>:<name> <link>, … | none`; once the work's folder has left the repo, the pending lines come from the archive's report.
 
 Code, changelog, version and archived work land on the target in one changeset. If something after the close needs the work's documents, move them back with `git mv`: they're plain files in git.
 
@@ -306,7 +306,7 @@ for f in docs/work/*/STATUS.md; do
 done
 ```
 
-**2. Check the outcome is recorded elsewhere.** `<changelog>` is the changelog's path: the string value of `changelog:` in `.flow.yml`, or the `path` of its map, default `<root>/CHANGELOG.md`. `<label>` is `labels.work` (default `Work`). ``rg -n -F -x -e '- **<label>**: `<slug>`' <changelog>``: if absent, the outcome is recorded nowhere; flag it and propose `/flow:changelog` first. `rg -l '^work: <slug>$' <root>/decisions-log/ 2>/dev/null`: the decisions stay out of the archive. If either is missing, don't block: report it and ask whether to archive anyway.
+**2. Check the outcome is recorded elsewhere.** `<changelog>` is the changelog's path: the string value of `changelog:` in `.flow.yml`, or the `path` of its map, default `<root>/CHANGELOG.md`. `<label>` is `labels.work` (default `Work`). ``rg -n -F -x -e '- **<label>**: `<slug>`' <changelog>``: if absent, the outcome is recorded nowhere; flag it and propose `/flow:changelog` first. `rg -l '^work: <slug>$' <root>/decisions-log/ 2>/dev/null`: the decisions stay out of the archive. If either is missing, don't block: report it and ask whether to archive anyway. With a `changelog` or `decisions` territory declared, these checks go through the adapter, as [Archive, repo, on a territory](#archive-repo-on-a-territory) step 1 says.
 
 **3. Census of inbound links.** `grep -rn "work/<dir>/" --include="*.md" docs README.md .claude 2>/dev/null`. Each becomes `work/archive/<dir>/`. If the count is high, say so before proceeding.
 
@@ -339,6 +339,29 @@ Report: which work, how many links updated, where its trace remains, whether the
 
 **Rereading an archived work.** Don't ask Claude to bypass the `deny`. Open the file by hand, or remove the rule from `.claude/settings.json`, restart the session, and put it back afterwards. A work that becomes active again goes back with `git mv`: the archive is a high shelf, not a grave.
 
+
+### Archive, repo, on a territory
+
+With an `archive` territory declared in `.flow.yml`'s `territories:` (repo layout only), the closed work goes to the territory instead of `<root>/work/archive/`. The adapter's side (the request, the returns, the re-run, the pending line) is [shared/territories.md](territories.md) § Writes › Archive; this section is the git side. The folder is kept as a folder of documents in the territory and removed from the repo in the archive commit. Nothing else changes: no `archived:` marker (the folder is clean, so the territory's copy matches the last commit, and the commit carries the date), no `<root>/work/archived.md` row, no `deny` in `.claude/settings.json`, and step 0 is skipped. The paths use the default root `docs`; with `root` in `.flow.yml`, substitute it.
+
+1. **Pick the work and check the outcome.** As [Archive, repo](#archive-repo) step 1, then its step 2 through the adapters, since `territories:` is declared. Read the contract (`shared/territories.md`) and make the session scratch folder first; this is an obligation, not an option. Send one invocation per adapter before anything is touched: `op: read; kind: changelog` when `changelog` is declared (the changelog check runs on the conductor's copy of the returned file), `op: list; kind: decisions` when `decisions` is declared (the decisions check is the anchored match `rg '(— |; )work: <slug>(;|$)' <file> | awk '{print $1}'` on the returned block), and `op: none` for every other declared kind, `archive` included, so `Requires` is checked first. Stop as [shared/territories.md](territories.md) § Resolution says, with nothing archived. A kind that is not declared keeps its repo check.
+2. **Clean check.** `git status --porcelain --ignored -- <root>/work/<dir>` must print nothing: `git rm -r` leaves untracked and ignored files behind, and the territory would get files the commit does not hold. If it prints anything, list it and ask; stop here on no.
+3. **Keep the pending lines.** Note the lines under the work's `## Pending proposals` in `STATUS.md`: the folder leaves the repo, and the report carries them.
+4. **Census of inbound links.** `grep -rn "work/<dir>/" --include="*.md" docs README.md .claude 2>/dev/null | grep -v "^docs/work/<dir>/"`.
+5. **Sibling census.** `grep -rn "\.\./<dir>/" --include="*.md" <root>/work | grep -v "^<root>/work/<dir>/"`: other works link it as `../<dir>/`.
+6. **Archive.** Send `op: archive; kind: archive; where: <where>[; write: <word>]; folder: <absolute path of <root>/work/<dir>>`, with `op: none` lines for the adapter's other declared kinds. `archived <name>` goes on. `proposed <link>` ends the procedure here: nothing is removed or rewritten, `- YYYY-MM-DD — archive:<dir> — <link>` goes under the work's `## Pending proposals` unless `STATUS.md` already holds `— archive:<dir> — `, committed with the message `Note a pending proposal on archive`, and the report says to run `/flow:archive` again once the proposal is accepted. `unmet`, `unreachable` or `FAILED: <reason>` is reported and the archive stops, with nothing removed.
+7. **Remove the folder.** Guarded, so an empty `<dir>` or an open work removes nothing:
+
+   ```bash
+   test -n "<dir>" && test -f <root>/work/<dir>/STATUS.md && grep -qx 'status: closed' <root>/work/<dir>/STATUS.md && git rm -r -q -- <root>/work/<dir>
+   ```
+
+8. **Rewrite the inbound references** from both censuses as plain text, never a link and never the adapter's link. `<where>` is the territory's `where` as written in `.flow.yml`. A Markdown link with text `<text>` and a target under `work/<dir>/` or `../<dir>/` becomes `<text> (archived on <where>: <name>)`; any other mention of the path becomes `archived on <where>: <name>`. Both censuses, run again without their `grep -v`, must print nothing.
+9. **Commit.** `git add <files with updated links>`, then `git commit -m "Archive the <slug> work"`. The removal is already staged.
+
+A re-run on an archived `<dir>` replaces the territory copy, and on an open proposal replaces its content under the same link (the contract's § Writes › Archive).
+
+Report: the work, `archive:<name>`, the number of links rewritten, and the pending lines kept, which [Closing a work](#closing-a-work) step 5 reports in place of `STATUS.md`. The way back: `git checkout <archive commit>^ -- <root>/work/<dir>`.
 
 ### Archive, project
 

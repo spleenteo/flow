@@ -18,4 +18,6 @@ If neither fits, ask the user which it is.
 
 ## Procedure
 
-Follow `${CLAUDE_PLUGIN_ROOT}/shared/work.md` (in the repo: [shared/work.md](../../shared/work.md)) § Archive for the chosen layout: Archive, repo or Archive, project. Report as that section says.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/work.md` (in the repo: [shared/work.md](../../shared/work.md)) § Archive for the chosen layout: Archive, repo or Archive, project. When `territories:` is declared in `.flow.yml` (any kind), read the contract (`${CLAUDE_PLUGIN_ROOT}/shared/territories.md`) first. With `archive` declared (repo layout only), follow § Archive, repo, on a territory (`#archive-repo-on-a-territory`); otherwise follow Archive, repo, whose step 2 then goes through the adapters.
+
+Report as that section says.
