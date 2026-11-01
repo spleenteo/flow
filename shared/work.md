@@ -306,7 +306,7 @@ for f in docs/work/*/STATUS.md; do
 done
 ```
 
-**2. Check the outcome is recorded elsewhere.** `<changelog>` is the changelog's path: the string value of `changelog:` in `.flow.yml`, or the `path` of its map, default `<root>/CHANGELOG.md`. `rg "<slug>" <changelog>`: if absent, the outcome is recorded nowhere; flag it and propose `/flow:changelog` first. `rg -l "<slug>" <root>/decisions-log/ 2>/dev/null`: the decisions stay out of the archive. If either is missing, don't block: report it and ask whether to archive anyway.
+**2. Check the outcome is recorded elsewhere.** `<changelog>` is the changelog's path: the string value of `changelog:` in `.flow.yml`, or the `path` of its map, default `<root>/CHANGELOG.md`. `<label>` is `labels.work` (default `Work`). ``rg -n -F -x -e '- **<label>**: `<slug>`' <changelog>``: if absent, the outcome is recorded nowhere; flag it and propose `/flow:changelog` first. `rg -l '^work: <slug>$' <root>/decisions-log/ 2>/dev/null`: the decisions stay out of the archive. If either is missing, don't block: report it and ask whether to archive anyway.
 
 **3. Census of inbound links.** `grep -rn "work/<dir>/" --include="*.md" docs README.md .claude 2>/dev/null`. Each becomes `work/archive/<dir>/`. If the count is high, say so before proceeding.
 
