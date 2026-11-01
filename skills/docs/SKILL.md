@@ -112,7 +112,7 @@ or `major? <release slug>: <reason>`.
 
 ## Op `changelog-write`
 
-Writes the entry, the version file, and one commit. The level and the title are the confirmed ones from the request: do not recompute them. The current number: the version file, else `current`, else `NEEDS: current`. Compute each version from it and the level; with a split, versions chain as in `changelog-propose`. A `major` level arrives only when the user confirmed it.
+Writes the entry and the version file and commits them; with `scratch`, it commits nothing, and the conductor commits the version file once the adapter holds the entry. The level and the title are the confirmed ones from the request: do not recompute them. The current number: the version file, else `current`, else `NEEDS: current`. Compute each version from it and the level; with a split, versions chain as in `changelog-propose`. A `major` level arrives only when the user confirmed it.
 
 ### Entry
 
@@ -153,12 +153,7 @@ Write the version to the version file, nothing else in it, newline-terminated. W
 
 ### Commit
 
-With `scratch`, the changelog is not in the repo: commit the version file alone.
-
-```bash
-git -C <dir> add <version_file>
-git -C <dir> commit -m "Bump the version to vX.Y.Z" -- <version_file>
-```
+With `scratch`, nothing is committed (the work reference, § Closing a work step 2).
 
 Same rules below (never `git add -A` or `git add .`, never `--amend`; the message names the last version of a split). Without `scratch`:
 
@@ -182,10 +177,10 @@ Recorded v<version> — <title> — <sha>; missing decisions: <none | list>; man
 
 With a split, every line carries the same `<sha>`.
 
-With `scratch`, each line adds `changelog: <absolute path of <scratch>/CHANGELOG.md>` after the sha:
+With `scratch`, each line carries `not committed` in place of the sha and adds `changelog: <absolute path of <scratch>/CHANGELOG.md>`:
 
 ```
-Recorded v<version> — <title> — <sha>; changelog: <absolute path>; missing decisions: <none | list>; manual after merge: <none | list>
+Recorded v<version> — <title> — not committed; changelog: <absolute path>; missing decisions: <none | list>; manual after merge: <none | list>
 ```
 
 ## Op `search`

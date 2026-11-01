@@ -17,4 +17,4 @@ When an older configuration file is present (the work reference, § Upgrade, nam
 
 Follow `${CLAUDE_PLUGIN_ROOT}/shared/work.md` (in the repo: [shared/work.md](../../shared/work.md)) § Closing a work (repo), step 2, in full: ask the questions it lists, then send the requests it describes to `flow:docs`.
 
-Nothing else of its own: the entry format, the version rule and the commit are `flow:docs`'s, the flow is the reference's.
+Nothing else of its own: the entry format, the version rule and the commit are `flow:docs`'s (with a `changelog` territory, the reference commits the version file once the adapter holds the entry), the flow is the reference's.
