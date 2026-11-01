@@ -215,8 +215,25 @@ The archive goes to an `archive` territory through a new `op: archive` in the co
 - Contract (`shared/territories.md`): `where` values and returned identifiers must never carry a token or a share id, since they are quoted verbatim in repo files; the A10 lines say so where `where` is defined.
 - Prose lows: `shared/work.md` ~:347 and ~:352, `skills/dev/SKILL.md` ~:388, and the "stays in git history" wording that doesn't fit project homes.
 
-**Out**: anything not listed in V6's final-review follow-ups.
+- Widened on 2026-11-01 by the user, after a full audit ([audit-fable.md](audit-fable.md)): H1 (changelog version committed before the adapter write), and the mediums M1–M5 and M7–M11 of the audit. H2 and H3 are the two items above.
+
+**Out**: M6 and the audit's lows (V8).
 
 **Done**
 - Read-through of the changed passages against the contract and `/flow:archive`; a headless run where the test adapter returns `FAILED:` on `op: archive` leaves the pending line in `STATUS.md`.
+- Gate green.
+
+**Deviations found while planning V7**
+- The cleared pending line is also restored on step 6's closed-guard stop and on `unmet`, not only on `unreachable` and `FAILED:`.
+- The resume route is not run headless; T3's throwaway-repo commands and a read-through check it.
+
+## V8 — A leaner conductor, and the audit's lows
+
+**In**
+- M6 of [audit-fable.md](audit-fable.md): the conductor (`skills/dev/SKILL.md`) restates the contract in several places (the anchored `rg … | awk` match ×5, the pending-line procedure ×4, the product block ×3, the stop list); each becomes one rule in `shared/territories.md` or `shared/work.md` with a one-clause pointer from the conductor. No behaviour change.
+- The audit's lows L1–L12, each in the file it names.
+
+**Done**
+- `skills/dev/SKILL.md` is shorter than at V8's start, and each removed passage has its pointer.
+- With no `territories:` and with the V6 fixtures, headless openings and an archive behave as at V8's start (judged on state).
 - Gate green.
