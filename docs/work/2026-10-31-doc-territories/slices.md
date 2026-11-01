@@ -245,3 +245,10 @@ V7 closed V6's follow-ups and the audit's H1–H3, M1–M5 and M7–M11 in eight
 - `skills/dev/SKILL.md` is shorter than at V8's start, and each removed passage has its pointer.
 - With no `territories:` and with the V6 fixtures, headless openings and an archive behave as at V8's start (judged on state).
 - Gate green.
+
+**Deviations found while planning V8**
+- L2's second half stays (the dependency check reads `stacks:` from the checkout only; ambiguous already on `main`, outside this change).
+- L3, L8, L11, L12 change behaviour in the territory and archive paths, as the audit asks; "no behaviour change" applies to M6.
+- M6 (d) keeps the archive step 3 guard; M6 (e) keeps the README's "still apply".
+- Word target 10600 (−309), not `main`'s 8566: territory obligations stay at their step, since a pointer in a parenthesis is skipped headless.
+- After review: word target ≤ 10450; move 3 (archive) and move 5 (report) become pointers to the work reference; the per-kind "through its adapter" notes go, since § Territories states it once; NEXT names the merge; archive commits use `docs/work/archive` as pathspec.
