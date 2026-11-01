@@ -2,7 +2,7 @@
 status: open
 phase: slice
 slice: V6
-step: execute
+step: null
 work: doc-territories
 stacks: [generic]
 base: main
@@ -24,7 +24,7 @@ description: "Documentation territories: each kind of project document can live 
 - [x] V3 — the adapter contract and its resolution
 - [x] V4 — reads through territories
 - [x] V5 — writes through territories
-- [ ] V6 — the archive on a territory
+- [x] V6 — the archive on a territory
 
 ## Log
 
@@ -38,3 +38,4 @@ description: "Documentation territories: each kind of project document can live 
 - 2026-10-31 — V3 close — contract shared/territories.md, resolution before the profile; headless runs: adapter called by qualified name, stops name the territory, no-key baseline identical; read order carried to V4; gate green; 3 lessons — V4 plan — ~30 min — —
 - 2026-10-31 — V4 close — reads through territories (§ Reads, excerpts:, read order held after fix, scratch packets); 8 tasks, 17 fix commits, final review 3 fixes; gate green; 6 lessons; carried to V5: product-cite rule in tool prompts, spike on scratch location — V5 plan — ~60 min — —
 - 2026-11-01 — V5 close — writes through territories (§ Writes, scratch composition, pending proposals, grill and changelog via adapter); spike: mktemp -d kept, git dir ruled out; final review 4 fixes; gate green — V6 plan; pending for the close: interactive default-mode check of a background Read in mktemp -d; decision candidate on the scratch place — ~60 min — —
+- 2026-11-01 — V6 close — archive on a territory (op: archive, guarded git rm, inbound links as plain text, slug check and search on the archive territory); runner died on an expired login and resumed from the ledger; gate green; follow-ups logged — work close — ~70 min — —

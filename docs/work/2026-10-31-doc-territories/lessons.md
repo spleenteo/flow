@@ -24,3 +24,7 @@ Rules learned while executing, one per line. Every plan and packet carries them.
 - `git diff --quiet [HEAD] -- <path>` exits 0 for an untracked or missing file; guard a "commit it alone" step with `git ls-files --error-unmatch <path>`.
 - In a user setup with `defaultMode: auto`, headless runs without a mode flag start in `auto` and `--allowedTools` stops binding; a zero-denial check there proves nothing about the allow-list.
 - An executor redoing a commit split must re-stage from its edits, never `git checkout --` them; a lost edit then shows up only as a report claim no commit holds.
+- A step that clears state before a remote call (a pending line before `op: archive`) says what happens to that state on each failing return: restore it, or name it in the stop's report.
+- A stop inside a closing sequence ("the close resumes at the merge") names who resumes it and how a later session finds it; a `status: closed` work is not routed back by the resume table, so the stopping step's report must name the next move.
+- A task reviewer bound by "run no tests or builds" won't run `claude plugin validate .` or the link loop even when the instruction asks; the runner runs them itself at the gate.
+- An executor's report lives only in the runner until the ledger write; when a runner can die between a commit and that write, the fix commit's subject (or body) lists each finding it meets, so the resume's review has a record to check against.
