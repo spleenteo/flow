@@ -30,7 +30,7 @@ The kinds, and where an undeclared kind lives (the repo, under `<root>/`, as wit
 Each entry has three fields:
 
 - `adapter` (required): the adapter skill's name as the session lists it, `<plugin>:<skill>` for a plugin's skill.
-- `where` (required): the place, in the adapter's own terms (a path, a space and collection, a project key). Flow never interprets it.
+- `where` (required): the place, in the adapter's own terms (a path, a space and collection, a project key). Flow never interprets it, and quotes it verbatim in repo files (the text that replaces an archived work's inbound links), so it never carries a token or a share id ([Tokens, per-user values and links](#tokens-per-user-values-and-links)).
 - `write` (optional): a word the adapter's `write` operation defines. Absent, the adapter's default applies.
 
 **Changelog.** A `changelog` territory takes the place of the `changelog` path. `labels`, `language` and `decisions` still apply.
@@ -45,7 +45,7 @@ The conductor resolves territories once, when it opens or resumes a work: after 
 
 - It reads `.flow.yml` and takes the adapter name of each entry, then invokes the adapter with the Skill tool, by that name, never by path.
 - **One invocation per adapter per step.** The args hold the step's request lines for every territory that adapter serves: one request per line, separated by newlines, and the adapter answers in the same order. Territories served by different adapters get one invocation each.
-- **Stops.** The run stops with one message that names the territory, and no work is opened or resumed, on: a malformed entry (unknown kind, or no `adapter` or `where`); an adapter the session doesn't list (exact name); an unmet `Requires`; any operation that returns `unreachable`. It never falls back to the repo.
+- **Stops.** The run stops with one message that names the territory, and no work is opened or resumed, on: a malformed entry (unknown kind, or no `adapter` or `where`); an adapter the session doesn't list (exact name); an unmet `Requires`; any operation that returns `unreachable`. It never falls back to the repo. The exception is an `op: write` inside a step, which follows § Writes › Returns.
 
 **Request line.** Several per territory are allowed, one per line of the args. Fields are separated by `; `, list values by `, ` (not by bare commas, since keywords may hold commas):
 
@@ -83,6 +83,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 | After the plan, before the review dispatch | a newly matched source naming a territory | `op: read` with `name` |
 | Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
 | Close, changelog step | `changelog` | `op: read` |
+| Close, changelog step | `decisions` | `op: list`, for the ids (§ Writes › Changelog) |
 
 **One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. The conductor copies each `read` and `results:` file it keeps into the scratch folder (each `read` as `<kind>/<name>.md`, `<kind>/document.md` for a single document); reuse and `excerpts:` point only there. A result already in the scratch folder this session is reused (the `list` result within a slice; a resume in a fresh session has none, so it reads the guidelines again).
 
@@ -96,7 +97,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read or write and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
-**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind.
+**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind. A `read` that returns `missing` means there are no guidelines yet: the profile asks the level, and the `## Tests` write sends a new file holding only `## Tests` (§ Writes). A `lenses` `read` that returns `missing` reads as an absent `impact-lenses.md`: project lenses: none.
 
 **Sources naming a territory.** A `sources:` entry may carry `{territory: <kind>, name: <name>, when: …}` in place of `path`:
 
@@ -104,7 +105,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 sources: [{territory: product, name: voice, when: ["app/**"]}]
 ```
 
-An undeclared kind is skipped and named. There is no `git ls-files` check. The packet heading is `### <kind>:<name>`, and the runner gets the path of its copy in the scratch folder.
+An undeclared kind is skipped and named. There is no `git ls-files` check. Its `when` holds globs only: a `{step: …}` or `{phase: …}` value is skipped and named, since no row above reads a territory source for a step or a phase. The packet heading is `### <kind>:<name>`, with the text of its copy verbatim.
 
 **Product.** For `framing-doc` and `shaping` only, a block named `` `## Product context` `` carries the `read` text verbatim, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. The block's first line, right under its heading, word for word: ``Context only: cite it as `product:<name>`, never copy its text into the document you write.`` (`<name>` is the read's name, `document` when none). Undeclared or `missing`: nothing.
 
@@ -118,7 +119,6 @@ What the conductor sends through an adapter for a declared kind, and what comes 
 |---|---|---|
 | Decision recorded (a conductor, `/flow:grill`) | `decisions` | `op: write` with `name: new` |
 | Status changed | `decisions` | `op: read` with `name`, then `op: write` with that `name` |
-| Close, changelog step | `decisions` | `op: list`, when `decisions` is declared (for the ids) |
 | Close, changelog step | `changelog` | `op: write` with no `name`, when `changelog` is declared |
 | Profile writes the `## Tests` lines | `guidelines` | `op: write` with no `name` |
 | Archive (`/flow:archive`) | `archive` | `op: archive` with `folder` |
@@ -216,5 +216,5 @@ The reference behaviour: what an undeclared kind does, and what every adapter st
 ## Tokens, per-user values and links
 
 - Tokens and per-user values live in the adapter plugin's own [user configuration](https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration), never in `.flow.yml` or in any file of the repo.
-- `where` values and returned links are identifiers or login-only links, never public share links. A local path counts as an identifier: a `file://` link to a local file is not a share link.
+- `where` values, returned identifiers and returned links are identifiers or login-only links, never public share links, and never carry a token or a share id: Flow quotes them verbatim in repo files (`archived on <where>: <name>`, the `## Pending proposals` lines). A local path counts as an identifier: a `file://` link to a local file is not a share link.
 - Flow doesn't enforce this. Keeping to it is the user's responsibility.
