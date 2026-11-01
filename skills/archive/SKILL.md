@@ -5,7 +5,7 @@ description: Use to archive a finished work: a `/flow:dev` work already recorded
 
 # Flow: archive
 
-Moves a finished work or project home out of the way and repairs what pointed at it. Nothing is lost: the folder stays in git history, and on a territory in its copy there. Invoked on its own or from the closing sequence of `/flow:dev` or `/flow:project`, always after the user confirms.
+Moves a finished work or project home out of the way and repairs what pointed at it. Nothing is lost: the folder moves to `<root>/work/archive/`, or to the home's sibling `archive/` for a project; on an `archive` territory it goes to its copy there, and the repo's git history keeps the removed folder. Invoked on its own or from the closing sequence of `/flow:dev` or `/flow:project`, always after the user confirms.
 
 ## Layout
 
