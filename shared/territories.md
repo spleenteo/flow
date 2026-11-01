@@ -61,7 +61,7 @@ Every request carries `op`, `kind` and `where`; `write` is carried when declared
 
 **Opening line.** When every adapter resolves, the conductor's opening message carries one line per declared territory: `<kind> → <where> (<adapter>, write: <write | default>)`.
 
-**`op: none`.** The request that runs `Requires` alone, with nothing read or written. It returns `ready` or `unmet: <what>`. In a step with reads, it is the line for each declared kind that has none, in the same invocation (§ Reads).
+**`op: none`.** The request that runs `Requires` alone, with nothing read or written. It returns `ready` or `unmet: <what>`. In a step with reads, it is the line for each declared kind that has none, in the same invocation (§ Reads). Resolution at opening or resume is that same invocation, never a call of its own: a kind with an operation in the step gets no `op: none`, since the operation checks `Requires` first; a step with no operation sends `op: none` for every declared kind.
 
 ## Reads
 
