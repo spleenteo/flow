@@ -1,8 +1,8 @@
 ---
 status: open
 phase: slice
-slice: V6
-step: null
+slice: V7
+step: plan
 work: doc-territories
 stacks: [generic]
 base: main
@@ -25,6 +25,7 @@ description: "Documentation territories: each kind of project document can live 
 - [x] V4 — reads through territories
 - [x] V5 — writes through territories
 - [x] V6 — the archive on a territory
+- [ ] V7 — cleanup from V6's final review
 
 ## Log
 

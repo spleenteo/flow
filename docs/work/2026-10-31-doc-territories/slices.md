@@ -206,3 +206,17 @@ Pending, carried to the work's close (needs the user in an interactive default-m
 **V6 — done on 2026-11-01**
 
 The archive goes to an `archive` territory through a new `op: archive` in the contract. The adapter keeps the work folder as a container, the local folder leaves in the archive commit, and inbound links become plain text. The archive's changelog and decisions checks are anchored on the slug. The opening's slug check and memory search also query the archive territory. Writing a test adapter from the contract alone, before any caller existed, surfaced sixteen guesses; ten became contract rules, among them the folder's last path component as `<dir>`, a re-run making the container hold exactly the folder's files, and `search` lines as `<dir> — <excerpt>`. Two fix rounds on T1 went into making a `comment` re-run converge: the match was defined as same files and same contents, and T4 got a step that clears the pending line and commits it alone before the re-run, dropping the `## Pending proposals` heading when it was the only entry, so the accepted container matches the folder. The final review found that the clean check could still send a dirty folder, and that on `proposed` the close merged an un-archived folder. The ruling: the close stops before the merge, and the user re-runs `/flow:archive` on the branch once the proposal is accepted. Left as follow-ups: nothing routes a closed work back to the merge in a later session, and nothing names the merge in the archive report. A pending line cleared before `op: archive` is not restored on `unreachable`/`FAILED:`. `<where>` is quoted verbatim in repo files, so the contract should forbid a token or share id in it. Some prose lows remain (shared/work.md:347, :352; skills/dev/SKILL.md:388; "stays in git history" for project homes). The re-run after an accepted proposal was never run headless. The runner died from an expired login after the final-review fix commit; the resume reviewed 058e305 from its commit, with the executor's report lost.
+
+## V7 — Cleanup from V6's final review
+
+**In**
+- Archive on a territory: a pending line cleared before `op: archive` is restored (and reported) when the op returns `unreachable` or `FAILED:`.
+- A close stopped before the merge on a `proposed` archive: `/flow:dev`'s resume finds a closed work whose archive is pending and routes it back to Step 6 move 4 (the merge) once `/flow:archive` reports `archived`; the `/flow:archive` report names the merge as the next move.
+- Contract (`shared/territories.md`): `where` values and returned identifiers must never carry a token or a share id, since they are quoted verbatim in repo files; the A10 lines say so where `where` is defined.
+- Prose lows: `shared/work.md` ~:347 and ~:352, `skills/dev/SKILL.md` ~:388, and the "stays in git history" wording that doesn't fit project homes.
+
+**Out**: anything not listed in V6's final-review follow-ups.
+
+**Done**
+- Read-through of the changed passages against the contract and `/flow:archive`; a headless run where the test adapter returns `FAILED:` on `op: archive` leaves the pending line in `STATUS.md`.
+- Gate green.
