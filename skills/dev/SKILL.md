@@ -72,7 +72,7 @@ sources: [{path: docs/guides/testing.md, when: ["spec/**"]}, {path: docs/notes/p
 |---|---|---|
 | `docs/CHANGELOG.md` | What shipped, by version, with the work slug | At opening, to see whether the request touches something already built (a declared kind: through its adapter) |
 | `docs/decisions-log/` | Why things are the way they are: alternatives discarded, problems deferred | At opening, in the impact lens "Memory and debt", in every plan review (a declared kind: through its adapter) |
-| `docs/work/archived.md` | Which works existed and where their outcome is | At opening, to check the slug and find related works |
+| `docs/work/archived.md` | Which works existed and where their outcome is | At opening, to check the slug and find related works (an `archive` territory: its `list` and `search`, the contract's § Reads) |
 | `docs/development-guidelines.md` | How code is written here: tests, naming, placement, gate | In every plan, review, execution and close (a declared kind: through its adapter) |
 
 Search before reading, through `flow:docs`: invoke the Skill tool with skill `flow:docs` and args one line, self-contained, since the fork sees no conversation:
@@ -209,12 +209,12 @@ Open with what you reloaded, in five lines — work, phase and slice, cost so fa
 One message, five questions, each with the answer this skill proposes from what it already knows. The user corrects what's wrong and answers what's missing. If the request touches a sensitive area of the profile, the message also carries the raise (`## Profile`).
 
 1. **What do you want to build?** In the user's words. Becomes `description` in the frontmatter.
-2. **Code name?** Propose a short lowercase slug with hyphens, checked against `docs/work/` and `docs/work/archived.md`.
+2. **Code name?** Propose a short lowercase slug with hyphens, checked against `docs/work/` and `docs/work/archived.md`. With an `archive` territory, also against its `list` (`op: list; kind: archive`, put in a scratch file) with the contract's anchored match, `rg '(— |; )work: <slug>(;|$)' <file> | awk '{print $1}'`; a match names `archive:<id>` and proposes another slug.
 3. **Source material?** Call transcripts, threads, notes. If yes, the frame starts from them with `framing-doc`.
 4. **The visible-outcome test.** *Can you already say in one sentence what changes for the product's users, without answering "it depends"?* **Yes** → technical work: skip to slicing. **No** → product work: start from the frame. State your reading: *"I read this as product work: describing the outcome I'd say 'it depends on which pages change'. If it's already defined for you, I'll skip to slicing."*
 5. **If product work: is the problem already clear?** Yes → skip the frame, start from shaping. No → the definition path: `flow:brainstorm` (path `<work dir>/brainstorm.md`), then `flow:grill` (target `brainstorm.md`; `layout: repo`, `dir`, `work` and `area` (from `areas:` in the configuration file, else a free kebab-case word per the work reference § Decisions; no slice yet) for decision candidates), then the frame.
 
-Before sending the message, check the project memory with the key words of the request (`flow:docs`, `op: search`, `layout: repo`, `dir`, with territories, the adapters' `search` results as `excerpts:`). When a `decisions` or `changelog` territory is declared, this call is not optional: always send `flow:docs` `op: search` with `excerpts:` (the adapters' `search` results, copied to the scratch folder as the contract's § Reads says), even when the repo has no `decisions-log/`; never read the territory's files directly instead. If a changelog entry, a decision or an archived work touches the same area, say so in the same message: *"v1.9 moved the list filters into `FilterBar`; the decision of 2026-06-12 rules out server-side filtering. I'll take both into account."*
+Before sending the message, check the project memory with the key words of the request (`flow:docs`, `op: search`, `layout: repo`, `dir`, with territories, the adapters' `search` results as `excerpts:`). When a `decisions`, `changelog` or `archive` territory is declared, this call is not optional: always send `flow:docs` `op: search` with `excerpts:` (the adapters' `search` results, copied to the scratch folder as the contract's § Reads says), even when the repo has no `decisions-log/`; the same invocation carries `op: search; kind: archive` and `op: list; kind: archive` when an `archive` territory is declared (hits as `archive:<identifier> — <excerpt>`); never read the territory's files directly instead. If a changelog entry, a decision or an archived work touches the same area, say so in the same message: *"v1.9 moved the list filters into `FilterBar`; the decision of 2026-06-12 rules out server-side filtering. I'll take both into account."*
 
 If the doubt is about the domain (what the code does today, which rule applies), the answer is in the repo: read it before asking.
 
@@ -385,9 +385,9 @@ Mechanics of each move: the work reference, § Closing a work (repo) and § Arch
 
 1. **Close the work.** Mark it closed, final Log line, commit.
 2. **Docs.** Ask, then follow the work reference, § Closing a work (repo), step 2: the questions, the `flow:docs` requests (`changelog-propose`, then `changelog-write`) and the report. Changelog entry and `.version`, committed on the branch.
-3. **Archive.** Ask, then invoke `/flow:archive`: the work folder moves to the archive, committed on the branch.
+3. **Archive.** Ask, then invoke `/flow:archive`: the work folder moves to the archive, or, with an `archive` territory, to its adapter and out of the repo, committed on the branch.
 4. **Merge.** Ask. Find the target and merge as the reference says: with `merge: local` (the default) propose the local merge and run it after an ok; with `merge: pr` propose a pull request and merge nothing. Push and tag each need their own ok. The branch is deleted only on request.
-5. **Report.** Where the work lived, phases done and skipped (with why), slice count, what the verifications found, version assigned, total wall-clock and cost from the Log, and what was merged, pushed or tagged (or that nothing was), and, only when `territories:` is declared, the line `Pending proposals: <kind>:<name> <link>, … | none` from `STATUS.md`'s `## Pending proposals` (the contract's § Writes › The pending line).
+5. **Report.** Where the work lived, phases done and skipped (with why), slice count, what the verifications found, version assigned, total wall-clock and cost from the Log, and what was merged, pushed or tagged (or that nothing was), and, only when `territories:` is declared, the line `Pending proposals: <kind>:<name> <link>, … | none` from `STATUS.md`'s `## Pending proposals`, or from the archive's report when the folder has left the repo (the contract's § Writes › The pending line).
 
 Code, changelog, version and archived work land on the target in one changeset. If something after the close needs the work's documents, the reference says how to move them back.
 
