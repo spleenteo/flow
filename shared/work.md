@@ -349,7 +349,9 @@ With an `archive` territory declared in `.flow.yml`'s `territories:` (repo layou
 3. **Keep the pending lines.** Note the lines under the work's `## Pending proposals` in `STATUS.md`: the folder leaves the repo, and the report carries them. When `STATUS.md` already holds `— archive:<dir> — ` (a re-run after the proposal was accepted), remove that line and commit `STATUS.md` alone first, so the accepted container matches the folder. Guard it as the contract's pending line is guarded:
 
    ```bash
-   git ls-files --error-unmatch <root>/work/<dir>/STATUS.md && git diff --quiet HEAD -- <root>/work/<dir>/STATUS.md && git add <root>/work/<dir>/STATUS.md && git commit -m "Clear the pending proposal on archive" -- <root>/work/<dir>/STATUS.md
+   git ls-files --error-unmatch <root>/work/<dir>/STATUS.md && git diff --quiet HEAD -- <root>/work/<dir>/STATUS.md
+   # exits 0: remove the line from the file, then
+   git add <root>/work/<dir>/STATUS.md && git commit -m "Clear the pending proposal on archive" -- <root>/work/<dir>/STATUS.md
    ```
 
 4. **Census of inbound links.** `grep -rn "work/<dir>/" --include="*.md" docs README.md .claude 2>/dev/null | grep -v "^docs/work/<dir>/"`.
