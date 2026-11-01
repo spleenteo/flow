@@ -28,3 +28,7 @@ Rules learned while executing, one per line. Every plan and packet carries them.
 - A stop inside a closing sequence ("the close resumes at the merge") names who resumes it and how a later session finds it; a `status: closed` work is not routed back by the resume table, so the stopping step's report must name the next move.
 - A task reviewer bound by "run no tests or builds" won't run `claude plugin validate .` or the link loop even when the instruction asks; the runner runs them itself at the gate.
 - An executor's report lives only in the runner until the ledger write; when a runner can die between a commit and that write, the fix commit's subject (or body) lists each finding it meets, so the resume's review has a record to check against.
+- A rule that moves a commit from callee to caller ("the conductor commits the version file") is grepped in every place the callee describes itself, request tables included, not only the lines the plan names; a callee reads its own table.
+- A hand-back from a called skill carries every field the caller must write (`proposed <link> (decisions:<name>)`), not just the outcome word; the composed name is seen only by the callee.
+- A failure branch in a numbered step says which later steps it skips and where the sequence stops; "report and record nothing" alone lets the next step report success.
+- Pick a restore branch by the file's git state (`git ls-files --error-unmatch`), never by a remembered "missing at step N"; a tracked file deleted on disk and an untracked file both defeat the remembered test.

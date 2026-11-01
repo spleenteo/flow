@@ -1,8 +1,8 @@
 ---
 status: open
 phase: slice
-slice: V7
-step: execute
+slice: V8
+step: plan
 work: doc-territories
 stacks: [generic]
 base: main
@@ -25,7 +25,7 @@ description: "Documentation territories: each kind of project document can live 
 - [x] V4 — reads through territories
 - [x] V5 — writes through territories
 - [x] V6 — the archive on a territory
-- [ ] V7 — cleanup from V6's final review
+- [x] V7 — cleanup from V6's final review
 - [ ] V8 — a leaner conductor, and the audit's lows
 
 ## Log
@@ -42,3 +42,4 @@ description: "Documentation territories: each kind of project document can live 
 - 2026-11-01 — V5 close — writes through territories (§ Writes, scratch composition, pending proposals, grill and changelog via adapter); spike: mktemp -d kept, git dir ruled out; final review 4 fixes; gate green — V6 plan; pending for the close: interactive default-mode check of a background Read in mktemp -d; decision candidate on the scratch place — ~60 min — —
 - 2026-11-01 — V6 close — archive on a territory (op: archive, guarded git rm, inbound links as plain text, slug check and search on the archive territory); runner died on an expired login and resumed from the ledger; gate green; follow-ups logged — work close — ~70 min — —
 - 2026-11-01 — audit — Fable read of the whole change: 26 findings (3 high, 11 medium, 12 low), report in audit-fable.md; V7 widened to the highs and mediums except M6; V8 added for M6 and the lows — V7 plan revision — ~15 min — —
+- 2026-11-01 — V7 close — audit highs and mediums fixed (version committed after the adapter write, pending archive line restored, closed-work route and merge offer, grill hands results back, runner stops on unreadable packet); gate green; lows carried to V8 — V8 plan — ~45 min — —

@@ -230,11 +230,16 @@ The archive goes to an `archive` territory through a new `op: archive` in the co
 - After widening: M3 is met by restriction (`{step:}`/`{phase:}` values of a territory source are skipped and named; no new read moments), so M8 only needs the runner's source fields to hold repo files. M5 is met by labelling the pending line "as recorded, not re-checked". A second headless run checks H1's failed changelog write.
 - After review: `/flow:archive` outside the close offers Step 6 move 4 when it returns `archived` on a closed work; on a failed changelog write, a version file the write created is removed with `git clean -f -q -- <version_file>`.
 
+**V7 — done on 2026-11-01**
+
+V7 closed V6's follow-ups and the audit's H1–H3, M1–M5 and M7–M11 in eight tasks plus one fix round per review that asked for it. T1 and T2 pinned the contract (no token or share id in `where` or returned ids, `missing` guidelines and lenses, glob-only territory sources, the `write` word on every write, failed writes record nothing, the "as recorded, not re-checked" pending label, and the changelog version committed only after the adapter answers). T3 and T4 carried that into the work reference: the archive's cleared pending line is kept as `<clear commit>` and restored by checkout on `unmet`, `unreachable`, `FAILED:` and a matching guard stop, and the archive report now offers the merge; the changelog step commits the bump on `written` or `proposed` and restores or removes the version file otherwise. T5 and T6 taught `/flow:dev` to resume a closed work whose `— archive:<dir> — ` line is still pending, and aligned the conductor with the sources, adapter, grill and runner rules. T7's review caught that flow:docs' request table still let `changelog-write` commit with `scratch`, which would have reopened H1; one fix round closed it. The final review found two cross-file gaps no task review could see: a called grill handed back no name for the caller's pending line (M4), and a failed changelog write still reached the success report and the archive (H1); one fresh fix closed both. T8's two headless runs, both in `auto` mode and judged on state, showed a `FAILED:` archive leaving STATUS.md as it was with a Clear then Restore pair, and a `FAILED:` changelog write leaving `.version` at 0.1.0 with no commit and the store untouched. Rulings: T7's three commits accepted as one concern each; the fix round's remaining lows (version-restore test order, move 2's next move, "Skip step 8" scope, territories.md:132 wording) go to V8.
+
 ## V8 — A leaner conductor, and the audit's lows
 
 **In**
 - M6 of [audit-fable.md](audit-fable.md): the conductor (`skills/dev/SKILL.md`) restates the contract in several places (the anchored `rg … | awk` match ×5, the pending-line procedure ×4, the product block ×3, the stop list); each becomes one rule in `shared/territories.md` or `shared/work.md` with a one-clause pointer from the conductor. No behaviour change.
 - The audit's lows L1–L12, each in the file it names.
+- Lows left by V7's final review: the version restore checks "missing at step 2" before `ls-files`; move 2 doesn't name the re-run; "Skip step 8" has an unclear scope; `shared/territories.md` ~:132's wording is narrower than the rule.
 
 **Done**
 - `skills/dev/SKILL.md` is shorter than at V8's start, and each removed passage has its pointer.
