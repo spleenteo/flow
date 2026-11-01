@@ -385,11 +385,11 @@ Mechanics of each move: the work reference, § Closing a work (repo) and § Arch
 
 1. **Close the work.** Mark it closed, final Log line, commit.
 2. **Docs.** Ask, then follow the work reference, § Closing a work (repo), step 2: the questions, the `flow:docs` requests (`changelog-propose`, then `changelog-write`) and the report. Changelog entry and `.version`, committed on the branch.
-3. **Archive.** Ask, then invoke `/flow:archive`: the work folder moves to the archive, or, with an `archive` territory, to its adapter and out of the repo (on `proposed`, it stays until accepted), committed on the branch.
+3. **Archive.** Ask, then invoke `/flow:archive`: the work folder moves to the archive, or, with an `archive` territory, to its adapter and out of the repo committed on the branch. On `proposed`, the close stops before the merge: the user runs `/flow:archive` again on the work's branch once the proposal is accepted, and the close resumes at the merge.
 4. **Merge.** Ask. Find the target and merge as the reference says: with `merge: local` (the default) propose the local merge and run it after an ok; with `merge: pr` propose a pull request and merge nothing. Push and tag each need their own ok. The branch is deleted only on request.
 5. **Report.** Where the work lived, phases done and skipped (with why), slice count, what the verifications found, version assigned, total wall-clock and cost from the Log, and what was merged, pushed or tagged (or that nothing was), and, only when `territories:` is declared, the line `Pending proposals: <kind>:<name> <link>, … | none` from `STATUS.md`'s `## Pending proposals`, or from the archive's report when the folder has left the repo (the contract's § Writes › The pending line).
 
-Code, changelog, version and archived work land on the target in one changeset. If something after the close needs the work's documents, the reference says how to move them back.
+Code, changelog and version land on the target in one changeset, and the archived work with them once the archive has run. If something after the close needs the work's documents, the reference says how to move them back.
 
 ## The short path
 
