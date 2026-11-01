@@ -2,6 +2,24 @@
 
 What shipped, by version, newest first. Each entry names the work it came from; the version lives in `.version`.
 
+## v0.5.0 — 2026-11-01 — Documentation territories
+
+A project can now say, for each kind of document, where it lives and which tool serves it, so Flow reads and writes there instead of only under `docs/`. A project that declares nothing behaves exactly as before.
+
+- **Territories**: a kind of document (decisions, changelog, guidelines, product context) can be declared with its place, its adapter and its writing peculiarities; the new shared contract describes reading, writing and searching a territory.
+- **Adapters in the conductor**: the conductor reads from the territory and puts the excerpt in each agent's packet, since the agents have no connectors; `flow:docs` stays file-based. If a territory can't be reached, Flow stops and says so.
+- **Sources**: a step can list `sources:` files, and they now reach the agents that need them instead of depending on the model opening them by chance.
+- **Changelog map**: the changelog path can be declared, and the work folder is found by its dated name.
+- **Proposals**: a write can end as "proposed, with a link" instead of "written"; the work's close lists the proposals still pending and stops before the merge when an archive is only proposed.
+- **Scratch folder**: territory text is composed in one temporary folder outside the repo, so nothing from a territory is copied into git.
+- **Docs**: the README and the architecture describe territories, sources and proposals.
+- **Work**: `doc-territories`
+- **Decision**: [Territory adapters run in the conductor, not behind flow:docs](decisions-log/2026-10-31-territory-adapters-run-in-the-conductor.md)
+- **Decision**: [The scratch folder is one mktemp outside the repo](decisions-log/2026-11-01-scratch-folder-is-one-mktemp-outside-the-repo.md)
+- **Decision**: [A proposed archive stops the close before the merge](decisions-log/2026-11-01-proposed-archive-stops-the-close-before-merge.md)
+
+---
+
 ## v0.4.1 — 2026-10-30 — Flow tells you when a newer release is out
 
 Flow now checks, at the start of a session, whether a newer release exists, so an installed copy no longer falls silently behind.

@@ -1,0 +1,260 @@
+---
+shaping: true
+work: doc-territories
+updated: 2026-10-31
+tags: [work, doc-territories, slices]
+description: "Slices of documentation territories: changelog, sources, the adapter contract, reads, writes, archive"
+---
+
+# Documentation territories — Slices
+
+Shape: A in [shaping.md](shaping.md) (A1–A10). Breadboard skipped: no new places, every change lands in existing skills plus one contract document.
+
+**Demo vehicle.** Flow ships no service adapter (R9). From V3 on, slices are demonstrated with a throwaway test adapter: a plugin created in the session scratchpad whose territory is a folder outside the test repo and whose documents carry the key/value table instead of frontmatter (the fallback of `## Fields`; native fields are an adapter's choice and are not exercised here). The session loads both the clone and the adapter, with `--plugin-dir` given twice: with one only, the released `flow` runs. Neither the adapter nor the throwaway test repo holding the `.flow.yml` under test is ever committed.
+
+| Slice | Parts | Requirements |
+|---|---|---|
+| V1 | A8 | R8.1, R8.2 |
+| V2 | A6 | R6 |
+| V3 | A1, A2, A3, A10 | R0.1 (kinds), R0.2, R1, R2, R9, R3 (stop) |
+| V4 | A4 (reads), A7 | R0.3 (read, search), R3, R5 (query), R7 |
+| V5 | A4 (writes), A5 | R0.3 (write), R4, R5 (write) |
+| V6 | A9 | R0.1 (archive) |
+
+## V1 — The changelog adapts to the project
+
+**In**
+- `changelog:` in `.flow.yml` accepts a map: `path`, `labels` (`work`, `decision`), `language`, `decisions: lines | inline` (`inline`: one bullet, links joined by ` · `). A string keeps today's meaning, as `path`.
+- Every reader of the key accepts both forms and takes `path` from the map: `skills/docs/SKILL.md` (configuration table, `changelog-propose`, `changelog-write`, the entry rules, `search`), `shared/work.md` (archive step 2), the key list in `skills/dev/SKILL.md`, the README and `docs/architecture.md`. The defaults reproduce today's entry exactly.
+- `changelog-propose` finds the work folder with `rg -l '^work: <slug>$' <root>/work/*/STATUS.md` (dated or not), never a `*-<slug>` glob, which also matches `mobile-menu` for `menu`.
+
+**Out**: a changelog on an external territory (V5).
+
+**Done**
+- In a throwaway repo with `changelog: {labels: {work: Job, decision: Why}, decisions: inline, language: it}` and a dated work folder, `changelog-propose` reads the work's `STATUS.md` and `slices.md`, and `changelog-write` writes an entry in Italian with `**Job**` and one `**Why**` line joining two links with ` · `.
+- Two works `menu` and `mobile-menu`: `changelog-propose` for `menu` reads only its own folder.
+- With `changelog: docs/CHANGELOG.md` or no key, the entry is byte-for-byte today's format.
+- Gate green.
+
+**Deviations found while planning V1**
+- The work-folder lookup gets the `<dir>/` prefix `flow:docs` requires on every `rg` path; no match continues from the git facts, several matches return `FAILED`.
+- `shared/work.md` line 8 ("Keys this file uses") also gains `changelog`, since archive step 2 reads it.
+
+**V1 — done on 2026-10-31**
+
+The changelog key takes a path or a map (`path`, `labels.work`, `labels.decision`, `language`, `decisions: lines | inline`); `flow:docs` defines `<changelog>` once and every reader (archive step 2, the dev key list, README, architecture) points to it. The work folder is found by `rg -l '^work: <slug>$' <dir>/<root>/work/*/STATUS.md` (no match: git facts only; several: FAILED). In scratchpad repos the map config gave an Italian entry with one `**Job**` and one `**Why**` line joining two decisions with ` · `; propose for `menu` read only its own dated folder; the string and no-key configs matched main's Flow structure line for line. The entry template was left untouched, which kept the default identical. All four tasks passed on the first review; no rulings. Left low: the lookup lacks `2>/dev/null` for an empty `work/`; the `<changelog>` sentence omits its default; archive's `rg "<slug>" <changelog>` still matches `mobile-menu` for `menu` (carried into V6).
+
+## V2 — Guidelines as a set of sources
+
+**In**
+- `sources:` in `.flow.yml`: a flow-style list of entries, each a repo path and a `when`, which holds path globs (quoted, since a flow-style value starting with `*` is a YAML alias) or `phase:`/`step:` values: the phases `frame`, `shaping`, `breadboard`, `design`, `slicing`, `impact`, and the slice steps `plan`, `review`, `execute`, `close`.
+- Path-scoped sources go in the slice packet: matched against the paths the slice's section of `slices.md` names, and again after the plan against the planner's `Files:`, as the decisions already are; a new match is added to the packet before the review.
+- Step-scoped sources go in the instruction after the packet, for the dispatches of that step only, so the packet stays one verbatim prefix for the whole slice.
+- The guidelines template's `## References` stays prose; the template points at `sources:` for what must reach agents.
+- The key list in `skills/dev/SKILL.md`, the README and `docs/architecture.md`.
+
+**Out**: sources on an external territory (V4).
+
+**Done**
+- In a throwaway repo with `sources:` naming a testing guide for `"spec/**"` and a pricing note for `plan`: the packet of a slice whose section names `spec/` holds the testing guide; a slice naming only `app/` does not; the planner's instruction, and no other dispatch, carries the pricing note.
+- No `sources:` → packets and instructions are as today.
+- Gate green.
+
+**Gotchas**: packet size; a path-scoped source is a whole file and weighs on every dispatch of the slice.
+
+**Deviations found while planning V2**
+- The first stop gets one line naming the sources the packet carries and their line counts (the packet-size gotcha).
+- `execute` and `close` sources reach the runner through two new fields, `Execute sources:` and `Close sources:`, and the dispatch contract in `shared/work.md` changes.
+- A directory path matches a glob only through the glob's literal prefix; a glob starting with a wildcard never matches a directory.
+
+**V2 — done on 2026-10-31**
+
+`sources:` in `.flow.yml` lists files that must reach agents, each with a `when` that is a quoted glob or a `{step:}`/`{phase:}` value. Sources matched by path ride in the packet's `## Sources` and are matched again against the planner's `Files:` before the review. Step sources ride in a `## Sources for step: <name>` block after the packet, only for that step's dispatches. The runner gets them as `Execute sources:`/`Close sources:` fields. The skill's example uses the brace form `when: {step: plan}` rather than the plan's `[step: plan]`, by a ruling, and the README copies it. T4's check that printed prompts through `claude -p` was flagged by the safety classifier. It was BLOCKED, and by the user's answer became a routing table: which source files each dispatch carries, in packet or in instruction. All five runs pass. With no `sources:`, V2's Flow and the 57b9c30 baseline route identically. The final review found that an untracked file (a `.env`) could pass the path check and land in the committed packet. Sources must now be tracked by git (`git ls-files --error-unmatch`). The same fix round made headings repo-relative and tightened the field conditions. Four low wording nits remain logged.
+
+## V3 — The adapter contract and its resolution
+
+**In**
+- `territories:` in `.flow.yml`: one entry per kind (`decisions`, `changelog`, `guidelines`, `lenses`, `product`, `archive`), each `adapter`, `where`, `write`. Undeclared kind → the repo, under `<root>/`, as today. When `territories: changelog` is declared it wins over `changelog.path`, and the opening says so; `labels`, `language` and `decisions` still apply.
+- `shared/territories.md`: the contract.
+  - `## Requires`; `## Fields`: native fields when the service has them, else the key/value table; `## Operations`: `read`, `write` (`written` or `proposed <link>`), `search`, `list`, `archive`, each with its input and return.
+  - `search` and `list` take keywords and files and return at most ten lines, or write their result to a scratch file whose absolute path they return.
+  - An adapter has no `context: fork` (it would bring back the fork-to-connector path the decision rules out) and no `disable-model-invocation: true` (the Skill tool could not call it).
+  - The repo as the contract's reference behaviour; A10's lines on tokens, per-user values and share links (also in the README).
+- Resolution in the conductor, on the design adapter's pattern: the qualified skill name from `territories:`, invoked by the Skill tool, `## Requires` read first; a missing skill or unmet requirement stops the step and names the territory. Adapters resolve **before the profile**, since the profile may read a guidelines territory. One adapter invocation per step.
+- `/flow:dev` profile: shows the declared territories at opening. (`/flow:project` homes have no `.flow.yml`: out.) The key list in `skills/dev/SKILL.md` and `skills/docs/SKILL.md`'s configuration table, `docs/architecture.md`.
+
+**Out**: any read or write through an adapter (V4, V5).
+
+**Done**
+- The throwaway test adapter, written only from `shared/territories.md`, resolves: opening a work in the test repo lists its territories. This is the first real check that a skill of another plugin is called by qualified name.
+- The test adapter's skill removed → the conductor stops and names the territory.
+- No `territories:` → nothing changes at opening.
+- Read-through: `shared/territories.md` and the README carry A10's lines and the two forbidden frontmatter keys.
+- Gate green.
+
+**Gotchas**: `presets:` already maps `design=<skill>`; keep `territories:` separate so a territory never reads as a stack. Carried from V2's final review (low): in `skills/dev/SKILL.md` ~:297 the planner's step block depends on any `sources:` being declared instead of on a `step: plan` source; fix it while editing that file. Routing for `review`, `execute` and `close` sources was never exercised in V2's test repos.
+
+**Deviations found while planning V3**
+- A malformed `territories:` entry (unknown kind, or no `adapter` or `where`) also stops the run and names the entry.
+- `op: none` is added beside the five operations: it runs `## Requires` alone, and it is the only request V3 sends.
+- V2's low finding is fixed at ~:297 and at the same defect in the review block (~:305), the phase sources (~:269) and the impact block (~:279).
+- "One adapter invocation per step" reads as one invocation per adapter per step: territories served by different adapters can't share one Skill call.
+- A run for an unmet `## Requires` is added to the checks.
+
+**V3 — done on 2026-10-31**
+
+`territories:` in `.flow.yml` declares, per kind (`decisions`, `changelog`, `guidelines`, `lenses`, `product`, `archive`), an `adapter` skill of another plugin, a `where` and a `write` word; an undeclared kind stays in the repo. `shared/territories.md` is the contract: declaring, resolution and its stops (malformed entry, missing skill, `unmet`, `unreachable`, never a fallback to the repo), the request lines (one per line, `; `-separated pairs), the adapter skill's sections and the forbidden `context: fork` and `disable-model-invocation: true`, the five ops plus `op: none`, the repo as reference behaviour, and A10's lines on tokens and share links. `/flow:dev` resolves territories after the upgrade check with one `op: none` Skill call per adapter and lists them at opening; flow:docs, the README and the architecture document the key. A throwaway adapter written from the contract alone exposed two gaps the final review fixed: how several requests reach one adapter, and how `write name: new` returns its id. Headless runs proved that another plugin's skill is called by its qualified name: run 1 lists the three territories, run 2 (skill removed) and run 3 (unmet `where`) stop naming the territory, and without the key the opening matches the baseline. The read order did not hold: the model batches `.flow.yml` with the guidelines and changelog in one early shell call, before the adapters resolve, even after a "read only `.flow.yml`" rule was added. By a ruling it is carried to V4, where a guidelines territory makes it matter. V2's low on `step: plan` source conditions is fixed at four places.
+
+## V4 — Reads through territories
+
+**In**
+- The conductor fetches through the adapter, for a declared territory, every read that ends in a packet, an instruction or a `flow:docs` request:
+  - decisions: search hits and descriptions at opening, at resume, at impact, in the slice packet, and in the re-query after the plan; the `touches` match on external decisions is done by the conductor from the fields the adapter returns;
+  - guidelines and impact lenses, including the profile's `## Tests` and `## Gate`, read before the profile;
+  - sources that name a territory;
+  - the changelog's past entries, read by `changelog-propose` and `changelog-write` for tone and language;
+  - product context (A7): at the opening of the frame and the shaping, above the path instruction; undeclared → nothing read.
+- `flow:docs` `search`, `descriptions` and the changelog ops take an `excerpts:` header key, the absolute path of a scratch file the conductor wrote; they merge it with the repo's matches; output format unchanged.
+- Step 0 offers no local guidelines or lenses file for a kind declared on a territory.
+- A packet that carries territory excerpts is written to the session scratchpad, not to `<work dir>/V<n>-packet.md`, and is never committed; the ledger records its path.
+- Docs: `docs/architecture.md`, the resume table and the project-memory table in `skills/dev/SKILL.md`, the `root:` comment in the README.
+
+**Out**: writes (V5).
+
+**Done**
+- With the test adapter serving `decisions`, `product` and `guidelines`: opening a work shows a memory-search hit from the external folder and the profile's test level from the external guidelines; a slice packet carries the description of an external decision matched by `touches`, the external guidelines' sections and a `sources:` entry naming a territory; the frame and shaping prompts carry the product excerpt.
+- The slice's packet file is in the scratchpad and `git status` shows no packet under the work folder.
+- A resume at `step: plan` reloads the same external reads.
+- No `territories:` → the same packets, in the same place, as today.
+- Gate green.
+
+**Gotchas**: reads are not validated: `decisions-check` runs on writes (V5). Carried from V3 (ruling): the read order doesn't hold headless — the model batches `.flow.yml`, the guidelines and the changelog in one early shell call, before adapters resolve. Fix here: the upgrade check matches its traces without printing any file; "read `.flow.yml` alone" becomes its own step at `skills/dev/SKILL.md` ~:116 and ~:120; the "Read if present" lines at ~:42 and ~:49 apply only after territories resolve; verify with a grep on the order of tool calls. Context: one adapter call per step, results capped or in a scratch file.
+
+**Deviations found while planning V4**
+- `skills/dev/SKILL.md` ~:104 is edited too (the dependency check reads stacks through the profile before the upgrade check); ~:47 (lenses) gets the same scope as ~:42; ~:49 becomes "read `.flow.yml` alone".
+- `shared/work.md` (§ Upgrade command block, the close's changelog step, the ledger's `Packet:` line) and `agents/slice-runner.md` change, beyond the mandate's Docs list.
+- A `guidelines` territory with no `## Tests`: the profile asks for the level and it holds for this session only (writing it there is V5).
+- Extra checks: a changelog `excerpts:` run and routing tables for shaping and frame.
+- The optional split into V4a/V4b was not taken: the plan stays whole (the user asked to run without stops).
+- After review: Step 0's clause (~:174) can't be tested with a configuration file present; the draft offer (~:145) is checked instead. Product context goes to `framing-doc` and `shaping` only; when the conductor writes `frame.md` itself it reads it but never copies it in; a `flow:brainstorm`-led frame gets no product block. Whether a forked read outside the working directories is allowed is recorded by a run; a denial is reported, since the runner reading a scratch packet hits the same rule.
+
+**V4 — done on 2026-10-31**
+
+Reads now go through territories. `shared/territories.md` gained § Reads: a table of moments (opening or resume before the profile, Step 1's search, resume, impact and slice packet, after the plan before the review, the frame and shaping openings, the close's changelog step), one adapter invocation per step with `op: none` lines for the other kinds, the conductor's copies of each result in one `mktemp -d` scratch folder per session, the `<kind>:<identifier> — <description>` excerpt line, the `touches` match done by the conductor on the `list` result, sources naming a territory (`### <kind>:<name>`), a `Product context` block for `framing-doc` and `shaping` only, and the packet's place (scratch when a reading kind is declared or a source names a territory, else the work folder; the ledger's `Packet:` line; a rebuild at resume where the condition puts it). `flow:docs` takes `excerpts:` on `search`, `descriptions` and the changelog ops, `none` only when both repo and excerpts are empty. `skills/dev/SKILL.md` routes the opening, resume, slice, frame and shaping reads through the adapter and offers no local guidelines or lenses file, nor writes `## Tests`, for a declared kind; `docs/architecture.md` and the README follow. The upgrade check became a git block that prints names only; the task's dictated commands were wrong on Apple git (inverted `cat-file`, a pathspec `*` crossing `/`, `\b` in ERE, tree-order output, exit 128 from a loop) and took two fix rounds tested in throwaway repos. Headless runs showed the Done holding only after three skill fixes made under rulings: Step 1's `flow:docs` call with `excerpts:` stated as an obligation, the product `op: read` named at the shaping and frame sites, and the read-order rule moved to the dependency check, the first step the model acts on, after it failed in 3 of 4 fresh runs. Two runs were invalid as first written: a `--resume` turn reused the earlier context instead of reading again, and "Write nothing" forbade the adapter's scratch copy, so the model read the store directly. Carried by ruling: the "context only" product rule is not yet in the prompt `framing-doc`/`shaping` receive (V5); whether a background runner may `Read` a scratch packet outside the working directories under default permissions is unverified; the scratch folder stays outside the repo. BSD `mktemp -d` ignores `TMPDIR`, so scratch folders land in `/var/folders`.
+
+## V5 — Writes through territories
+
+**In**
+- Decisions on an external territory, from every writer (the conductors and `flow:grill`): `flow:docs` composes the decision as a dated file alone in a scratch folder whose absolute path the request gives, runs `decisions-check` on that folder, and returns the path with no sha; the conductor hands it to the adapter's `write`. A status change first reads the external decision into such a file, then the same.
+- The changelog on an external territory: `changelog-write` composes the entry from the excerpt of past entries (V4), the adapter writes it, and the commit holds only the version file. A **Decision** line links the external document by an identifier or a login-only link; it is not dropped because `decisions-log/` is missing.
+- Profile writes to an external guidelines territory (the `## Tests` lines) go through the adapter and may come back `proposed`.
+- `written` or `proposed <link>`: a proposal is appended under `## Pending proposals` in `STATUS.md` (added to the template in `shared/work.md`); the close's report lists them in one line, its sequence unchanged.
+- Docs: `docs/architecture.md`, `skills/docs/SKILL.md`'s request table (`excerpts:`, scratch path, no-sha returns).
+
+- Carried from V4 (rulings): the "cite as `product:<name>`, never copy" rule goes inside the block `framing-doc` and `shaping` receive, not only in the conductor's text, so product text never lands in a committed `frame.md` or `shaping.md`.
+- Carried from V4 (spike, before the plan's execute tasks): whether a background `flow:slice-runner` may `Read` a packet in a `mktemp -d` scratch folder outside the working directories under default permissions (a prompt surfacing in the main session, a denial, or silent access), against the alternative `$(git rev-parse --git-dir)/flow-scratch/` (inside the checkout, never committed; check whether writes there prompt). The spike's outcome picks the place and is proposed as a decision.
+
+**Out**: archive (V6).
+
+**Done**
+- Test adapter with `write: comment` on `decisions`: recording a decision returns `proposed`, `STATUS.md` lists it, the close's report names it. With `write: direct`, the document appears in the external folder with its key/value table.
+- A decision recorded from `flow:grill` lands on the territory too.
+- A status change on an external decision updates its fields in the external folder.
+- With `changelog` on the test territory, `changelog-write` puts the entry there with its Decision line; `.version` is bumped in the repo and committed alone.
+- A decision that fails `decisions-check` is not handed to the adapter.
+- No `territories:` → decisions and changelog are written and committed as today.
+- Gate green.
+
+**Deviations found while planning V5**
+- `shared/territories.md`, `shared/work.md`, `skills/dev/SKILL.md` and `skills/grill/SKILL.md` change beyond the Docs list; `op: write` gets an optional `name` and `read` a fixed frontmatter form.
+- A decision on a territory is named by identifier (`decisions:<id>`), never linked (a `file://` link fails the Gate's link check). On a territory a status change fails on any check error.
+- Each pending-proposal line in `STATUS.md` is committed alone, so the changelog commit holds only the version file.
+- "The close's report" is the work close's report (Step 6 move 5); the slice's second stop is unchanged.
+- The spike reaches the default permission mode with `--setting-sources project,local` in a throwaway repo (the user settings set `defaultMode: auto`), checked on each run's `init`; it also checks a worktree's git dir. Both places denied → V5 changes neither place nor runner.
+- After review: the spike runs every probe in `default` and in `auto`; `git-dir` wins only if the worktree probe also passes in both modes, else `mktemp -d` stays. The contract gains the `list` line form for an anchored `work` match. A pending line is committed alone only when `STATUS.md` is otherwise clean; else it rides the next `STATUS.md` commit. The test adapter is written from the contract alone right after T2.
+
+**V5 — done on 2026-11-01**
+
+V5 sends writes through territories. The spike ran headless in two modes. Under `-p`, neither scratch place lets a background reader through in default mode: `mktemp -d` is denied, and so is a linked worktree's git dir, whose `.git` writes are protected paths besides. Auto mode let both through, but only under the documented `-p` exception, so interactive sessions are expected to prompt in both modes. `mktemp -d` stays. The contract gained § Writes, covering decisions, status changes, the close's changelog and the profile's `## Tests`, each composed in a fresh `w.XXXXXX` folder and handed to the adapter, with `written`/`proposed`/`FAILED: <id> exists` returns and the `## Pending proposals` line. The test adapter, written from the contract alone, found twelve gaps. They became contract rules in two fix rounds: the check order, ids for `name: new`, how proposals are seen, `list` field order, read file names, escaping, absolute links. flow:docs takes `scratch:` and `decision-ids:`. The work reference, /flow:dev and /flow:grill call it, and the product block now opens with its "cite, never copy" line inside the block the tool receives. Reviews caught three real path bugs. A decisions-only project lost its changelog entry because `scratch:` went with any territory. Grill passed the session folder, not a fresh one, as `scratch:`. Run 6b showed a free-named copy of a read leaking into the composed file name. Rulings: `git diff --quiet HEAD` replaced the plan's index-only check, and an `ls-files` guard joined it after the final review. The `Pending proposals:` report line appears only with `territories:`. All 13 headless runs passed, every one in `auto` mode. The allowed-tools boundary was never exercised (`sed`, `git switch` ran unlisted), and that stays unverified.
+
+Pending, carried to the work's close (needs the user in an interactive default-mode session): does a background `Read` of a packet in `mktemp -d` prompt in the main session rather than being denied? Decision candidate held for the user: the scratch folder stays one `mktemp -d` outside the repo; the git dir is ruled out.
+
+## V6 — The archive on a territory
+
+**In**
+- `/flow:archive` with an `archive` territory: the adapter's `archive` op receives the work folder and keeps it as a folder of documents; the local folder is removed in the archive commit; no `archived.md` row, no wall.
+- Inbound links to the work's folder (from decisions, the changelog, other works) become plain text naming where it went (`archived on <territory>: <name>`), never a share link, so the Gate's link check stays green.
+- The slug check at opening and the opening memory search also query the archive territory (`list`, `search`).
+- With no `archive` territory, `/flow:archive` works as today.
+- Docs: `shared/work.md` § Archive, `docs/architecture.md`, `skills/dev/SKILL.md` where it cites `archived.md`.
+- Archive step 2's `rg "<slug>" <changelog>` matches longer slugs (`mobile-menu` for `menu`): anchor it on the Work bullet (from V1's final review). The site's file tree (`site/index.html`) shows the default and stays.
+
+**Done**
+- In the test repo, archiving a closed work copies its files into a folder of the external territory and removes the local one in one commit; `archived.md` is untouched and no `deny` is added; a decision linking the work now names it in plain text; the Gate's link check is green.
+- Opening a new work with the archived work's slug is caught; the opening search finds the archived work.
+- No `archive` territory → `/flow:archive` as today.
+- Gate green.
+
+**Deviations found while planning V6**
+- `shared/territories.md`, `skills/archive/SKILL.md`, `skills/docs/SKILL.md` ~:141 and steps 3 and 5 of § Closing a work change beyond the Docs list.
+- Archive step 2 reads a declared `changelog` or `decisions` territory through the adapter even with no `archive` territory; the `decisions-log/` check is anchored too.
+- On a territory there is no `archived:` marker; a clean folder is required instead. A `proposed` archive keeps the folder and adds a pending line; `op: archive` is safe to run again.
+- Only repo files get the plain-text link rewrite; links held by documents on other territories stay, and the report says so.
+- A run checks the `proposed` path, beyond the Done.
+- After review: on kind `archive`, `list` lines carry `status` and `work` only (exception to the `touches` rule); the census also covers sibling works' `../<dir>/` links; `git rm` runs only behind the `<dir>` and `status: closed` guard; the clean check counts ignored files; a re-run of `op: archive` replaces the territory copy; `/flow:archive` reads the contract whenever `territories:` is declared.
+
+**V6 — done on 2026-11-01**
+
+The archive goes to an `archive` territory through a new `op: archive` in the contract. The adapter keeps the work folder as a container, the local folder leaves in the archive commit, and inbound links become plain text. The archive's changelog and decisions checks are anchored on the slug. The opening's slug check and memory search also query the archive territory. Writing a test adapter from the contract alone, before any caller existed, surfaced sixteen guesses; ten became contract rules, among them the folder's last path component as `<dir>`, a re-run making the container hold exactly the folder's files, and `search` lines as `<dir> — <excerpt>`. Two fix rounds on T1 went into making a `comment` re-run converge: the match was defined as same files and same contents, and T4 got a step that clears the pending line and commits it alone before the re-run, dropping the `## Pending proposals` heading when it was the only entry, so the accepted container matches the folder. The final review found that the clean check could still send a dirty folder, and that on `proposed` the close merged an un-archived folder. The ruling: the close stops before the merge, and the user re-runs `/flow:archive` on the branch once the proposal is accepted. Left as follow-ups: nothing routes a closed work back to the merge in a later session, and nothing names the merge in the archive report. A pending line cleared before `op: archive` is not restored on `unreachable`/`FAILED:`. `<where>` is quoted verbatim in repo files, so the contract should forbid a token or share id in it. Some prose lows remain (shared/work.md:347, :352; skills/dev/SKILL.md:388; "stays in git history" for project homes). The re-run after an accepted proposal was never run headless. The runner died from an expired login after the final-review fix commit; the resume reviewed 058e305 from its commit, with the executor's report lost.
+
+## V7 — Cleanup from V6's final review
+
+**In**
+- Archive on a territory: a pending line cleared before `op: archive` is restored (and reported) when the op returns `unreachable` or `FAILED:`.
+- A close stopped before the merge on a `proposed` archive: `/flow:dev`'s resume finds a closed work whose archive is pending and routes it back to Step 6 move 4 (the merge) once `/flow:archive` reports `archived`; the `/flow:archive` report names the merge as the next move.
+- Contract (`shared/territories.md`): `where` values and returned identifiers must never carry a token or a share id, since they are quoted verbatim in repo files; the A10 lines say so where `where` is defined.
+- Prose lows: `shared/work.md` ~:347 and ~:352, `skills/dev/SKILL.md` ~:388, and the "stays in git history" wording that doesn't fit project homes.
+
+- Widened on 2026-11-01 by the user, after a full audit ([audit-fable.md](audit-fable.md)): H1 (changelog version committed before the adapter write), and the mediums M1–M5 and M7–M11 of the audit. H2 and H3 are the two items above.
+
+**Out**: M6 and the audit's lows (V8).
+
+**Done**
+- Read-through of the changed passages against the contract and `/flow:archive`; a headless run where the test adapter returns `FAILED:` on `op: archive` leaves the pending line in `STATUS.md`.
+- Gate green.
+
+**Deviations found while planning V7**
+- The cleared pending line is also restored on step 6's closed-guard stop and on `unmet`, not only on `unreachable` and `FAILED:`.
+- The resume route is not run headless; T3's throwaway-repo commands and a read-through check it.
+
+- After widening: M3 is met by restriction (`{step:}`/`{phase:}` values of a territory source are skipped and named; no new read moments), so M8 only needs the runner's source fields to hold repo files. M5 is met by labelling the pending line "as recorded, not re-checked". A second headless run checks H1's failed changelog write.
+- After review: `/flow:archive` outside the close offers Step 6 move 4 when it returns `archived` on a closed work; on a failed changelog write, a version file the write created is removed with `git clean -f -q -- <version_file>`.
+
+**V7 — done on 2026-11-01**
+
+V7 closed V6's follow-ups and the audit's H1–H3, M1–M5 and M7–M11 in eight tasks plus one fix round per review that asked for it. T1 and T2 pinned the contract (no token or share id in `where` or returned ids, `missing` guidelines and lenses, glob-only territory sources, the `write` word on every write, failed writes record nothing, the "as recorded, not re-checked" pending label, and the changelog version committed only after the adapter answers). T3 and T4 carried that into the work reference: the archive's cleared pending line is kept as `<clear commit>` and restored by checkout on `unmet`, `unreachable`, `FAILED:` and a matching guard stop, and the archive report now offers the merge; the changelog step commits the bump on `written` or `proposed` and restores or removes the version file otherwise. T5 and T6 taught `/flow:dev` to resume a closed work whose `— archive:<dir> — ` line is still pending, and aligned the conductor with the sources, adapter, grill and runner rules. T7's review caught that flow:docs' request table still let `changelog-write` commit with `scratch`, which would have reopened H1; one fix round closed it. The final review found two cross-file gaps no task review could see: a called grill handed back no name for the caller's pending line (M4), and a failed changelog write still reached the success report and the archive (H1); one fresh fix closed both. T8's two headless runs, both in `auto` mode and judged on state, showed a `FAILED:` archive leaving STATUS.md as it was with a Clear then Restore pair, and a `FAILED:` changelog write leaving `.version` at 0.1.0 with no commit and the store untouched. Rulings: T7's three commits accepted as one concern each; the fix round's remaining lows (version-restore test order, move 2's next move, "Skip step 8" scope, territories.md:132 wording) go to V8.
+
+## V8 — A leaner conductor, and the audit's lows
+
+**In**
+- M6 of [audit-fable.md](audit-fable.md): the conductor (`skills/dev/SKILL.md`) restates the contract in several places (the anchored `rg … | awk` match ×5, the pending-line procedure ×4, the product block ×3, the stop list); each becomes one rule in `shared/territories.md` or `shared/work.md` with a one-clause pointer from the conductor. No behaviour change.
+- The audit's lows L1–L12, each in the file it names.
+- Lows left by V7's final review: the version restore checks "missing at step 2" before `ls-files`; move 2 doesn't name the re-run; "Skip step 8" has an unclear scope; `shared/territories.md` ~:132's wording is narrower than the rule.
+
+**Done**
+- `skills/dev/SKILL.md` is shorter than at V8's start, and each removed passage has its pointer.
+- With no `territories:` and with the V6 fixtures, headless openings and an archive behave as at V8's start (judged on state).
+- Gate green.
+
+**Deviations found while planning V8**
+- L2's second half stays (the dependency check reads `stacks:` from the checkout only; ambiguous already on `main`, outside this change).
+- L3, L8, L11, L12 change behaviour in the territory and archive paths, as the audit asks; "no behaviour change" applies to M6.
+- M6 (d) keeps the archive step 3 guard; M6 (e) keeps the README's "still apply".
+- Word target 10600 (−309), not `main`'s 8566: territory obligations stay at their step, since a pointer in a parenthesis is skipped headless.
+- After review: word target ≤ 10450; move 3 (archive) and move 5 (report) become pointers to the work reference; the per-kind "through its adapter" notes go, since § Territories states it once; NEXT names the merge; archive commits use `docs/work/archive` as pathspec.
+
+**V8 — done on 2026-11-01**
+
+The conductor shrank from 10909 to 10438 words. The anchored match (rewritten for L3 to compare `work` exactly, never inside `description`, keeping identifiers with spaces), the product read and block, the pending-line check and the repo-changelog skip each have one home in `shared/territories.md` or `shared/work.md`, and `skills/dev/SKILL.md` points at them; T7 found every removed rule in its new home. The audit's lows L1–L12 and V7's four lows were fixed in their files, including the archive commits' pathspecs, the `phase: done` guard and a version restore picked by `git ls-files`. The runner died on a network error after T5's commit; on resume T1–T5 were reviewed from their commits, with T5's report lost. T2's review found the plan's pointer sentence for the pending line placed after the append, reading as add-then-check; one fix put "before the append" back at the step. The gate went red on the plan itself: quoted Markdown links in inline code (T5 (d), T8) are read by the link loop; one fix unlinked them. T8's headless pairs matched on state; the plan's `v7-adapter` fails `op: archive` by design, so the archive comparison ran on the copying `v6-adapter` (ruled). One new-flow opening sent an extra `op: none; kind: archive`; a rerun sent the contract's shape, so it was ruled variance, though the final review notes that V8 dropped the clause binding resolution's `op: none` to Step 1's invocation, so § Resolution should settle it. Final review passed with lows only: `repo-changelog: skip`'s condition and the standalone changelog's anchored match sit in parentheses.
+
+Open for the close: V8 cut the clause that put `op: none` for undeclared-read kinds in Step 1's invocation; `shared/territories.md` § Resolution should state it (one opening sent an extra `op: none; kind: archive`, a rerun did not).

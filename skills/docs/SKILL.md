@@ -36,9 +36,13 @@ The `ARGUMENTS:` text is a header line of `key: value` pairs, followed, for `dec
 | `kind`, `slug` | `decision-write`: `decision` or `deferral`; the slug of the file name |
 | `work` | Also `decision-write`, repo layout: the work's slug, or `null` for a decision taken outside a work |
 | `slice` | `decision-write`, project layout: `S<n>` or `null` |
-| `file` | `decision-status`: the decision file, relative to `dir` |
-| `status`, `superseded_by`, `resolved_by`, `note` | `decision-status`: the new status (`superseded` or `resolved`), the file name of the new decision or the slug of the resolving work, and the one-line note for the status log |
+| `file` | `decision-status`: the decision file, relative to `dir`; with `scratch`, the absolute path of the conductor's copy |
+| `status`, `superseded_by`, `resolved_by`, `note` | `decision-status`: the new status (`superseded` or `resolved`), the file name of the new decision (with `scratch`, its identifier) or the slug of the resolving work, and the one-line note for the status log |
+| `excerpts` | Absolute path of a scratch file the conductor wrote (`search`, `descriptions`, changelog ops). The paths outside `dir` this skill touches are `excerpts`, `scratch` and, with `scratch`, `file`. For `search` and `descriptions` it holds lines already in the return format, from a territory; for the changelog ops, the changelog's past entries read from a territory |
+| `repo-changelog` | `search`: `skip` leaves `<dir>/<changelog>` out of the `rg` call, because the changelog lives on a territory and a repo copy left behind is stale |
 | `install` | `decision-check`: `yes` copies the script into the repo |
+| `scratch` | Absolute path of an empty folder the conductor made, for `decision-write`, `decision-status` and `changelog-write` on a territory. The op writes its document there and commits none of it; `changelog-write` writes the version file and commits nothing either: the conductor commits it once the adapter holds the entry. Absent: the op works in the repo and commits, as described below |
+| `decision-ids` | `changelog-write`: `decisions:<id>` items of the work's decisions on a territory, comma-separated |
 
 Required: `op`, `layout`, `dir`; and per op: changelog ops need `work`, `base`, `release`; `changelog-write` also `level` and `title` per release; `search` and `descriptions` need `keywords` or `files` (at least one; in the project layout `files` is ignored, so `files` alone is `NEEDS: keywords`); `decision-write` needs `kind`, `slug`, `work` (repo) or `project` and `slice` (project), and the notes `decision:`, `context:`, `alternatives:` (decision) or `why-deferred:` (deferral), `consequences:`, `reopen-when:`, `touches:` (repo layout) and `area:` (repo layout); `decision-status` needs `file`, `status`, the matching `superseded_by` or `resolved_by`, and `note`; `decision-check` needs nothing more in the repo layout. In the project layout `decision-write`, `decision-status` and `decision-check` need `project`. A changelog op with `layout: project` is `NEEDS: layout repo`: a project has no changelog.
 
@@ -64,13 +68,16 @@ Read `.flow.yml` in `dir`. Never create it. When an older configuration file nam
 | Key | Default |
 |---|---|
 | `root` | `docs` |
-| `changelog` | `<root>/CHANGELOG.md` |
+| `changelog` | `<root>/CHANGELOG.md`. A path, or a map; see below |
 | `version_file` | `.version` (at the repo root) |
 | `areas` | none. A flow list, `areas: [engine, ui]`: the allowed values of a decision's `area`; passed to the check as `--areas` |
+| `territories` | none. Not read here: the conductors resolve territories and call their adapters ([contract](../../shared/territories.md)); this skill works on repo files and on what a request hands it |
 
 `package.json` is not touched: its `version` tracks the package, not the application.
 
-**Language**: that of the existing changelog entries. For a new changelog, that of the rest of `<root>/`.
+**The `changelog` map**: keys `path` (`<root>/CHANGELOG.md`), `labels.work` (`Work`), `labels.decision` (`Decision`), `language` (unset), `decisions` (`lines`). A missing key takes its default; unknown keys are ignored. Flow style on one line and block style are both accepted. `decisions` holds `lines` or `inline`; anything else: `FAILED: changelog.decisions must be lines or inline`, nothing written. A string value is the `path`. Below, `<changelog>` is the changelog's path: the string value, or the map's `path`.
+
+**Language**: `language` of the `changelog` map when set. Otherwise that of the existing changelog entries (with `excerpts`, those in that file); for a new changelog, that of the rest of `<root>/`. It sets the prose of the entry and the intro of a new changelog, not the labels, and not the commit message.
 
 ## Op `changelog-propose`
 
@@ -84,7 +91,7 @@ git -C <dir> diff <base>..HEAD --stat
 git -C <dir> status --short
 ```
 
-2. Read the changelog: existing entries set tone and detail. Read the version file for the current number; if it is missing, use `current`; if that is missing too, `NEEDS: current`. Read the work's `STATUS.md` and `slices.md` in `<root>/work/<work>/`: the "V<n> — done on" sections say what really happened.
+2. Read `<changelog>`: existing entries set tone and detail. With `excerpts`, read that file instead: its entries replace `<changelog>` for tone, detail and language (the changelog itself may live in a territory and be absent from the repo). Read the version file for the current number; if it is missing, use `current`; if that is missing too, `NEEDS: current`. Read the work's `STATUS.md` and `slices.md` in its folder, found with `rg -l '^work: <slug>$' <dir>/<root>/work/*/STATUS.md` (dated or not; never a glob on the folder name, which also matches longer slugs). No match: continue from the git facts alone. More than one match: `FAILED: several work folders for <slug>`. The "V<n> — done on" sections say what really happened.
 3. `release` names the releases. With a split, each slug is one release: attribute the commits to it by their subjects and the files they touch. Versions chain: the second release builds on the first.
 4. Apply the rule. Not a negotiation.
 
@@ -106,11 +113,13 @@ or `major? <release slug>: <reason>`.
 
 ## Op `changelog-write`
 
-Writes the entry, the version file, and one commit. The level and the title are the confirmed ones from the request: do not recompute them. The current number: the version file, else `current`, else `NEEDS: current`. Compute each version from it and the level; with a split, versions chain as in `changelog-propose`. A `major` level arrives only when the user confirmed it.
+Writes the entry and the version file and commits them; with `scratch`, it commits nothing, and the conductor commits the version file once the adapter holds the entry. The level and the title are the confirmed ones from the request: do not recompute them. The current number: the version file, else `current`, else `NEEDS: current`. Compute each version from it and the level; with a split, versions chain as in `changelog-propose`. A `major` level arrives only when the user confirmed it.
 
 ### Entry
 
 At the top of the changelog, after the intro block and before the first `## v`. A missing changelog is created with a two-line intro and the first entry; an existing one is adopted as is.
+
+With `scratch`, the entry goes into a copy of `excerpts` (or, without `excerpts`, under a new two-line intro) written to `<scratch>/CHANGELOG.md`; `<dir>/<changelog>` is neither read nor written.
 
 ```markdown
 ## vX.Y.Z — YYYY-MM-DD — Short title
@@ -130,10 +139,12 @@ One or two sentences: what changes and why it was done.
 - **Date**: the day of writing, `YYYY-MM-DD`, not when the work started: the merge follows on the same branch.
 - **Title**: the confirmed `title`. It says what changed for the reader, not the branch name. *"The calendar no longer crashes"*, not *"fix/calendar-null-technician"*.
 - **Bullets**: a bold label naming the concept, then a plain sentence. No commit list: forty commits still make four bullets.
-- **Work**: the work's slug in `<root>/work/`. It's the hook that survives archiving: `rg "<slug>" <changelog>` must find the entry.
-- **Decision**: links to the `<root>/decisions-log/` files that explain why; find them with `rg -l '^work: <slug>$' <dir>/<root>/decisions-log/`. The link path is relative to the changelog file (`decisions-log/<file>` when the changelog is `<root>/CHANGELOG.md`; the template above shows the default root). Check the file exists before linking. If the work took decisions no file records, report it under `missing decisions`: a decision is missing, but you don't write it. Omit the bullet if the repo has no `decisions-log/`.
+- **Work**: the work's slug in `<root>/work/`; its label is `labels.work`. It's the hook that survives archiving: archive step 2 finds the entry by this bullet.
+- **Decision**: its label is `labels.decision`. With `lines`, one bullet per decision, as in the template; with `inline`, one bullet holding the label and every link joined by ` · ` (space, U+00B7, space). Links to the `<root>/decisions-log/` files that explain why; find them with `rg -l '^work: <slug>$' <dir>/<root>/decisions-log/`. The link path is relative to the changelog file (`decisions-log/<file>` when the changelog is `<root>/CHANGELOG.md`; the template above shows the default root). Check the file exists before linking. If the work took decisions no file records, report it under `missing decisions`: a decision is missing, but you don't write it. Omit the bullet if the repo has no `decisions-log/` and `decision-ids` is absent.
+  - **`decision-ids`**: each item is named `` `decisions:<id>` ``, never linked (a `file://` link in a repo changelog fails the Gate); the bullet stays even without `decisions-log/`, and the items come before the repo decisions' links. Each item counts as recorded for `missing decisions`, so territory decisions are not listed there.
+  - **On a changelog territory** (`scratch` set), a repo decision is named `` `<root>/decisions-log/<file>` ``, not linked: the changelog does not live beside it.
 - **No "files changed" section**: this is a register, not a diff.
-- **No operational instructions**: migrations, backfills and secrets don't go here. If the work's plans (`<root>/work/<dir-of-work>/V<n>-plan.md`) or its `STATUS.md` say something must be done by hand after the merge, report it under `manual after merge`, never in the changelog.
+- **No operational instructions**: migrations, backfills and secrets don't go here. If the work's plans (`V<n>-plan.md`) or its `STATUS.md`, in the folder found by the lookup of `changelog-propose`, say something must be done by hand after the merge, report it under `manual after merge`, never in the changelog.
 - **No emoji**, unless the feature itself uses one.
 - **Split**: one entry per release, in order, newest on top; each carries its own slug in the **Work** bullet.
 
@@ -142,6 +153,10 @@ One or two sentences: what changes and why it was done.
 Write the version to the version file, nothing else in it, newline-terminated. With a split, the last release's version. Create it if missing. It's the only place the application version lives.
 
 ### Commit
+
+With `scratch`, nothing is committed (the work reference, § Closing a work step 2).
+
+Same rules below (never `git add -A` or `git add .`, never `--amend`; the message names the last version of a split). Without `scratch`:
 
 ```bash
 git -C <dir> add <changelog> <version_file>
@@ -163,14 +178,20 @@ Recorded v<version> — <title> — <sha>; missing decisions: <none | list>; man
 
 With a split, every line carries the same `<sha>`.
 
+With `scratch`, each line carries `not committed` in place of the sha and adds `changelog: <absolute path of <scratch>/CHANGELOG.md>`:
+
+```
+Recorded v<version> — <title> — not committed; changelog: <absolute path>; missing decisions: <none | list>; manual after merge: <none | list>
+```
+
 ## Op `search`
 
 Search before reading, then read only what matches.
 
-- `layout: repo`: `rg -il "<keyword>" <dir>/<changelog> <dir>/<root>/decisions-log/ --glob '*.md' --glob '!README.md' <dir>/<root>/work/archived.md`, one keyword at a time or as an alternation. Never `<root>/work/archive/`.
+- `layout: repo` (`<dir>/<changelog>` is the changelog's path): `rg -il "<keyword>" <dir>/<changelog> <dir>/<root>/decisions-log/ --glob '*.md' --glob '!README.md' <dir>/<root>/work/archived.md`, one keyword at a time or as an alternation. Never `<root>/work/archive/`.
 - `layout: project`: under `dir`, `rg -il "<keyword>" --glob '*/STATUS.md' --glob '*/decisions/*.md' --glob '*/lessons.md' <dir>`.
 
-`rg` always gets an explicit path. Read the matching files, and for each keep the lines that bear on the keywords.
+`rg` always gets an explicit path; a `<changelog>` that does not exist, or any `<changelog>` with `repo-changelog: skip`, is left out of the call. Read the matching files, and for each keep the lines that bear on the keywords.
 
 **`files`** (repo layout): the decisions in `<dir>/<root>/decisions-log/` are matched by their frontmatter, not by their text. For each decision file with a `touches:` line, split the list; an entry matches a requested file when, compared by whole path segments, it equals the file or is a parent directory of it (`src/menu` matches `src/menu/Item.tsx`, not `src/menu-old/x.ts`; ignore a trailing `/`). A path that appears only in the body doesn't count. Files with no `touches:` (legacy) never match by `files`. With both `keywords` and `files`, a file is a match when it matches either; the excerpt for a `files` match is the file's description. With `files` alone, `<root>/decisions-log/` is the only place searched.
 
@@ -180,7 +201,9 @@ Return at most ten lines, the most relevant first, each:
 <path> — <excerpt>
 ```
 
-`<path>` relative to `dir`; the excerpt one sentence, in the file's own words. No match: return `none`.
+`<path>` relative to `dir`; the excerpt one sentence, in the file's own words. No match in the repo and no excerpt lines (or no `excerpts`): return `none`.
+
+**`excerpts`**: when given, read that file; each of its lines is a match as given, in the format above, whatever the layout. Merge them with the repo's matches and keep ten at most, the most relevant first. Same output format.
 
 ## Op `descriptions`
 
@@ -190,14 +213,14 @@ As `search`, `files` included, over decisions only: `<root>/decisions-log/` (rep
 <path> — <the file's description: line>
 ```
 
-A decision with no `description:` line gives its title instead. No match: return `none`.
+A decision with no `description:` line gives its title instead. With `excerpts`, merge its lines as in `search`: they are descriptions already, taken as given, ten at most. `none` only when the repo has no match and the excerpts hold no line.
 
 ## Op `decision-write`
 
 Writes one decision file in the format, checks it, commits it alone. Read the format first, with the Read tool, at `${CLAUDE_SKILL_DIR}/decisions.md`: it holds the frontmatter, the headings, the templates and the rules, and you follow it exactly. The check script is `${CLAUDE_SKILL_DIR}/scripts/decisions-check` and is always run as `bash ${CLAUDE_SKILL_DIR}/scripts/decisions-check …`.
 
 1. The header gives `kind`, `slug`, and `work` (repo) or `project` and `slice` (project). Missing, or `kind` not `decision`/`deferral`: `NEEDS: <field>`. The notes are lines labelled `decision:`, `context:`, `alternatives:` (or `why-deferred:` for a deferral), `consequences:`, `reopen-when:`, `references:`, `touches:`, `area:`: one line per item; a label repeated gives several items (bullets for `alternatives:`, `references:`, `touches:`). A required label missing (`decision`, `context`, `alternatives` or `why-deferred`, `consequences`, `reopen-when`; and in the repo layout `touches` and `area`): `NEEDS: <label>`. `references: none` writes `- none`. `touches:` items go into the flow list `[a, b]`, one list.
-2. The path: repo `<dir>/<root>/decisions-log/YYYY-MM-DD-<slug>.md`, project `<dir>/<project>/decisions/YYYY-MM-DD-<slug>.md`, with today's date; create the folder if missing. The file exists already: `FAILED: <path> exists`. A project home that does not exist: `FAILED: no <project> under <dir>`.
+2. The path: repo `<dir>/<root>/decisions-log/YYYY-MM-DD-<slug>.md`, project `<dir>/<project>/decisions/YYYY-MM-DD-<slug>.md`, with today's date; create the folder if missing. With `scratch` (a territory), the path is `<scratch>/YYYY-MM-DD-<slug>.md` and `<scratch>` must exist, else `FAILED: no <scratch>`. The file exists already: `FAILED: <path> exists`. A project home that does not exist: `FAILED: no <project> under <dir>`.
 3. Write it from the template in the format file. Title: the decision as a statement, from `decision:`. `description`: one quoted line of at most 160 characters, what was decided and what it rules out, in your own words from the notes. The status log opens with `- YYYY-MM-DD — recorded`. Write the notes in the notes' language and don't add facts they don't carry. `area`: the note's value, else (project layout) omitted. In the project layout there is no `touches`.
 4. Check it: the script checks a folder, so run it on the decisions folder.
 
@@ -205,8 +228,8 @@ Writes one decision file in the format, checks it, commits it alone. Read the fo
 bash ${CLAUDE_SKILL_DIR}/scripts/decisions-check [--project] [--areas <areas from .flow.yml>] <decisions folder>
 ```
 
-   `--project` in the project layout; `--areas` only when `.flow.yml` has `areas:` (pass its items comma-separated). Fix every error reported for your file in the file and run it again, up to three times. An `area` outside the declared vocabulary is not fixed by picking one: remove the file and answer `NEEDS: area (one of <list>)`. If it still reports errors, remove the file and answer `FAILED: check: <first error>`. Errors in other files are not yours: ignore them.
-5. Commit it alone, pathspec form (a repo; a project home only when it is inside a git repo, which you test with `git -C <home> rev-parse --show-toplevel`, otherwise skip the commit and say `not committed`):
+   `--project` in the project layout; `--areas` only when `.flow.yml` has `areas:` (pass its items comma-separated). Fix every error reported for your file in the file and run it again, up to three times. An `area` outside the declared vocabulary is not fixed by picking one: remove the file and answer `NEEDS: area (one of <list>)`. If it still reports errors, remove the file and answer `FAILED: check: <first error>`. Errors in other files are not yours: ignore them. With `scratch`, the folder holds only your file, so the check sees it alone.
+5. With `scratch`, commit nothing: the conductor hands the file to the adapter. Otherwise commit it alone, pathspec form (a repo; a project home only when it is inside a git repo, which you test with `git -C <home> rev-parse --show-toplevel`, otherwise skip the commit and say `not committed`):
 
 ```bash
 git -C <dir> add <path>
@@ -223,18 +246,28 @@ Recorded <path> — <commit sha | not committed> — check: <the script's summar
 
 `<path>` relative to `dir`; the summary line is the script's last line (`checked N, legacy M, errors K, warnings W`) from the final run.
 
+With `scratch`, the return is instead:
+
+```
+Composed <absolute path> — check: <the script's summary line>
+```
+
+with no sha; on `NEEDS:` or `FAILED:` the file is removed and nothing is handed on.
+
 ## Op `decision-status`
 
 Changes a decision's status. Never touches the body. Read the format file (`${CLAUDE_SKILL_DIR}/decisions.md`, § Changing status) first.
 
-1. `file` relative to `dir` (a project: under `<project>/decisions/`; the file must exist, else `FAILED: no <file>`). `status`: `superseded` or `resolved`; for `superseded`, `superseded_by` (the new file's name), for `resolved`, `resolved_by` (the work's slug); `note` the status-log line. Missing: `NEEDS: <field>`.
+1. `file` relative to `dir` (a project: under `<project>/decisions/`; the file must exist, else `FAILED: no <file>`). With `scratch`, `file` is the absolute path of the conductor's copy (must exist, else `FAILED: no <file>`): the file's name less `.md` is the decision's identifier; copy it to `<scratch>/<its **Date**>-<identifier less a leading date>.md` and work on that copy; the original is not touched. `status`: `superseded` or `resolved`; for `superseded`, `superseded_by` (the new file's name; with `scratch`, its identifier), for `resolved`, `resolved_by` (the work's slug); `note` the status-log line. Missing: `NEEDS: <field>`.
 2. Edit the frontmatter only, changing lines that already exist and adding no key: `status:` and `superseded_by:` or `resolved_by:` (replace the `null` line; a kind that does not carry that key, say `resolved` on a decision: `FAILED: <status> does not fit kind <kind>`). Append `- YYYY-MM-DD — <note>` with today's date as the last line under `## Status log`. A file with no `## Status log` heading (legacy) gets the heading `## Status log` appended at the end, then the line; a legacy file gets no `kind:` and no other key, and the status log carries the change. No other line of the file changes.
-3. For a file with `kind:`, run the check as in `decision-write` and report its summary line; never fix content. A legacy file skips the check.
-4. Commit it alone as in `decision-write` step 5 (pathspec form, including the no-git case), message `Mark <file name> <status>`. Return:
+3. For a file with `kind:`, run the check as in `decision-write` and report its summary line; never fix content. A legacy file skips the check. With `scratch`, run the check on `<scratch>`; any error removes the copy and answers `FAILED: check: <first error>`.
+4. With `scratch`, commit nothing. Otherwise commit it alone as in `decision-write` step 5 (pathspec form, including the no-git case), message `Mark <file name> <status>`. Return:
 
 ```
 Updated <path> — <status> — <commit sha | not committed> — check: <summary line | legacy>
 ```
+
+With `scratch`, the return is instead `Composed <absolute path> — <status> — check: <summary line | legacy>` (the path of the copy), with no sha.
 
 ## Op `decision-check`
 

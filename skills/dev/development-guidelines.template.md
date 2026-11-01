@@ -4,7 +4,7 @@ Rules the plans and the code must follow. `/flow:dev` passes this file to every 
 
 ## References
 
-<!-- External guides and skills this project follows (style guides, framework skills, internal handbooks). One line each, with where to find it. -->
+<!-- External guides and skills this project follows (style guides, framework skills, internal handbooks). One line each, with where to find it. A document Flow's agents must read goes in `sources:` of `.flow.yml`, with when it applies. -->
 
 ## Tests
 

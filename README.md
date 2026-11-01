@@ -165,15 +165,25 @@ None required. Defaults: `docs/` as the root, `.version` at the repo root, `merg
 Optional `.flow.yml` at the project root:
 
 ```yaml
-root: docs                  # where work/, decisions-log/ and development-guidelines.md live
+root: docs                  # where work/ lives, and every kind territories doesn't move
 stacks: [astro, datocms]    # rails | astro | datocms | react | node | generic
 merge: local                # local | pr
 design: pen                 # the design tool /flow:design uses; only pen ships an adapter
 changelog: docs/CHANGELOG.md
 version_file: .version
 areas: [engine, ui]         # the area words a decision may carry
+territories:               # per kind, where it lives and its adapter
+  decisions: {adapter: acme-wiki:territory, where: ENG/decisions, write: comment}
+  product: {adapter: acme-wiki:territory, where: PROD/context, write: direct}
 presets: [astro=my-stacks:astro]   # stack=skill or design=skill pairs, replacing the shipped one
+sources: [{path: docs/guides/testing.md, when: ["spec/**"]}, {path: docs/notes/pricing.md, when: {step: plan}}]   # files that must reach the agents, and when
 ```
+
+`changelog` also takes a map: `changelog: {path: docs/CHANGELOG.md, labels: {work: Job, decision: Why}, language: it, decisions: inline}`. `path` is the file (a plain string means the same), `labels` rename the `Work` and `Decision` lines of an entry, `language` sets the prose of the entry (otherwise it follows the existing changelog), and `decisions: inline` puts the decision links on one line joined by ` · ` instead of one line each (`lines`, the default). A missing key keeps today's format.
+
+`sources` lists the documents Flow's agents must read, wherever they live in the repo. `path` is repo-relative and must be a tracked file, or `{territory: <kind>, name: <name>}` takes its place to bring a document from a declared territory (its `when` holds globs only); `when` is one value, either a quoted glob (`"spec/**"`, quoted because a flow-style value starting with `*` is a YAML alias) or `{step: <name>}` / `{phase: <name>}`, otherwise a list of them. A path-scoped source goes in the slice packet when the paths the slice's section names (and, after the plan, the planner's `Files:`) match its glob; a step- or phase-scoped source goes in the instruction after the packet, for the dispatches of that step only. A path-scoped source is a whole file and weighs on every dispatch of the slice, so keep those short and scope them narrowly. Without `sources`, nothing changes.
+
+`territories` says where a kind of document lives when it isn't in the repo: `decisions`, `changelog`, `guidelines`, `lenses`, `product` or `archive`, each with an `adapter` (`<plugin>:<skill>`), a `where` and a `write` mode. A kind you don't declare stays under the root, as today. When `territories: changelog` is declared it takes the place of the `changelog` path; `labels`, `language` and `decisions` still apply. Adapters come from another plugin, not from Flow, and an adapter skill must not set `context: fork` nor `disable-model-invocation: true` in its frontmatter. Tokens and per-user values belong in the adapter plugin's own user configuration, never in `.flow.yml` or a repo file. `where` values and returned links are identifiers or login-only links, never public share links. Flow doesn't enforce it; it is the user's responsibility. The contract is in [`shared/territories.md`](shared/territories.md).
 
 `/flow:dev` writes `.flow.yml` only to record what you answered in the profile, on the work's branch, and in the upgrade (below).
 
