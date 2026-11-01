@@ -32,7 +32,7 @@ Rules learned while executing, one per line. Every plan and packet carries them.
 - A hand-back from a called skill carries every field the caller must write (`proposed <link> (decisions:<name>)`), not just the outcome word; the composed name is seen only by the callee.
 - A failure branch in a numbered step says which later steps it skips and where the sequence stops; "report and record nothing" alone lets the next step report success.
 - Pick a restore branch by the file's git state (`git ls-files --error-unmatch`), never by a remembered "missing at step N"; a tracked file deleted on disk and an untracked file both defeat the remembered test.
-- The Gate's link loop skips only fenced blocks, so a plan that quotes a Markdown link inside inline code (`[x](../y)`) breaks the gate; quote a link's target without the `](` form.
+- The Gate's link loop skips only fenced blocks, so a plan that quotes a Markdown link inside inline code (a bracket text followed by a parenthesised target) breaks the gate; quote a link's target without a closing bracket right before an opening parenthesis.
 - When a dictated sentence turns a rule into a pointer ("as § X says"), keep the rule's timing at the step ("before the append"); a pointer placed after the action reads as after it.
 - A Verified line that names a fixture adapter names its behaviour too: a failure-simulating adapter cannot meet a state comparison of a success path; pick the copying one, or check the failure branch on purpose.
 - A base/new difference in a headless run's tool-call shape is rerun once on the side that differed before it is called a slice effect; one run per side does not separate a change from variance.
