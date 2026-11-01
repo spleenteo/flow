@@ -194,3 +194,11 @@ Pending, carried to the work's close (needs the user in an interactive default-m
 - Opening a new work with the archived work's slug is caught; the opening search finds the archived work.
 - No `archive` territory → `/flow:archive` as today.
 - Gate green.
+
+**Deviations found while planning V6**
+- `shared/territories.md`, `skills/archive/SKILL.md`, `skills/docs/SKILL.md` ~:141 and steps 3 and 5 of § Closing a work change beyond the Docs list.
+- Archive step 2 reads a declared `changelog` or `decisions` territory through the adapter even with no `archive` territory; the `decisions-log/` check is anchored too.
+- On a territory there is no `archived:` marker; a clean folder is required instead. A `proposed` archive keeps the folder and adds a pending line; `op: archive` is safe to run again.
+- Only repo files get the plain-text link rewrite; links held by documents on other territories stay, and the report says so.
+- A run checks the `proposed` path, beyond the Done.
+- After review: on kind `archive`, `list` lines carry `status` and `work` only (exception to the `touches` rule); the census also covers sibling works' `../<dir>/` links; `git rm` runs only behind the `<dir>` and `status: closed` guard; the clean check counts ignored files; a re-run of `op: archive` replaces the territory copy; `/flow:archive` reads the contract whenever `territories:` is declared.

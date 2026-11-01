@@ -2,7 +2,7 @@
 status: open
 phase: slice
 slice: V6
-step: plan
+step: execute
 work: doc-territories
 stacks: [generic]
 base: main
