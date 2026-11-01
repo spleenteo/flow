@@ -8,7 +8,7 @@ description: "Plan of V7: V6's follow-ups and the audit's H1–H3, M1–M5, M7�
 
 # V7 — Cleanup from V6's final review and the audit — Plan
 
-**Mandate**: [V7-packet.md](V7-packet.md) · **Audit**: [audit-fable.md](audit-fable.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V7-packet.md](V7-packet.md) · **Audit**: [audit-fable.md](audit-fable.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. Contract, `shared/territories.md`. T1 covers Declaring, Resolution, Reads and Tokens: A10 at :33 and :219, the write exception to the Stops, `missing` guidelines and lenses (M2), glob-only territory sources (M3, M8), and the close's decisions `list` moved into Reads (M11). Then T2 covers Writes and Operations: the version is committed only after the adapter's write (H1), the `write` word on every write (M9), failed writes (M1), the `missing` guidelines write (M2), the dead skip clause (H3) and the "as recorded" pending line (M5).

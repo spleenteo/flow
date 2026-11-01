@@ -8,7 +8,7 @@ description: "Plan of V3: territories: in .flow.yml, the adapter contract in sha
 
 # V3 — The adapter contract and its resolution — Plan
 
-**Mandate**: [V3-packet.md](V3-packet.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V3-packet.md](V3-packet.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1 writes `shared/territories.md`: the `territories:` syntax and kinds, resolution and its stops, the adapter skill's frontmatter and sections, the five operations with input and return, the repo as reference behaviour, and A10's lines.

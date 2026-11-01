@@ -8,7 +8,7 @@ description: "Plan of V5: the scratch-location spike, contract § Writes, a test
 
 # V5 — Writes through territories — Plan
 
-**Mandate**: [V5-packet.md](V5-packet.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V5-packet.md](V5-packet.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1, the spike. A background subagent `Read`s a packet in `mktemp -d`, in the git dir and in a worktree's git dir, and the main session writes to both. Each probe runs in the `default` and the `auto` mode. `spike-scratch-location.md` picks the place.

@@ -8,7 +8,7 @@ description: "Plan of V6: the archive op in the contract, a test adapter from th
 
 # V6 — The archive on a territory — Plan
 
-**Mandate**: [V6-packet.md](V6-packet.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V6-packet.md](V6-packet.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1 writes the `archive` side of `shared/territories.md`: § Reads rows (slug check, memory search, archive step 2), § Writes › Archive, and the `op: archive` rules in § Operations and § Fields (a re-run replaces the copy). It also adds the `archive` exception to the `list` fields at :187.

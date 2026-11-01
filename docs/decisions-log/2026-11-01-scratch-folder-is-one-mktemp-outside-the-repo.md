@@ -35,7 +35,7 @@ Claude Code starts prompting for or denying subagent reads outside the project, 
 
 ## References
 
-- [spike-scratch-location](../work/2026-10-31-doc-territories/spike-scratch-location.md)
+- [spike-scratch-location](../work/archive/2026-10-31-doc-territories/spike-scratch-location.md)
 
 ## Status log
 

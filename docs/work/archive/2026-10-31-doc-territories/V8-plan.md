@@ -8,7 +8,7 @@ description: "Plan of V8: the conductor's restated contract rules (M6) moved to 
 
 # V8 — A leaner conductor, and the audit's lows — Plan
 
-**Mandate**: [V8-packet.md](V8-packet.md) · **Audit**: [audit-fable.md](audit-fable.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V8-packet.md](V8-packet.md) · **Audit**: [audit-fable.md](audit-fable.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1 makes `shared/territories.md` the single home of the anchored match (rewritten for L3), the product read and block, and the repo-changelog skip (M6 b, c, f), with L7, L8, L10 and V7's wording low.

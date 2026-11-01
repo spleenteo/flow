@@ -34,7 +34,7 @@ Teams find closes blocked for long on archive proposals, or an adapter can confi
 
 ## References
 
-- [slices](../work/2026-10-31-doc-territories/slices.md)
+- [slices](../work/archive/2026-10-31-doc-territories/slices.md)
 
 ## Status log
 

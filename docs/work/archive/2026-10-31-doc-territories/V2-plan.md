@@ -8,7 +8,7 @@ description: "Plan of V2: sources: in .flow.yml; path-scoped sources ride in the
 
 # V2 — Guidelines as a set of sources — Plan
 
-**Mandate**: [V2-packet.md](V2-packet.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V2-packet.md](V2-packet.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1 defines `sources:` once in `skills/dev/SKILL.md` § Conventions (syntax, matching, placement, bad entries) and hooks it into every place a packet or an instruction is built: Step 3, impact, the slice packet, plan, review and its re-match, the first stop, execute move 4, the loop, close move 1, the resume table.

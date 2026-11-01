@@ -8,7 +8,7 @@ description: "Plan of V4: reads through territories (contract § Reads, flow:doc
 
 # V4 — Reads through territories — Plan
 
-**Mandate**: [V4-packet.md](V4-packet.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V4-packet.md](V4-packet.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1 adds `## Reads` to `shared/territories.md`: the request each moment sends per kind (`op: none` lines for the rest), descriptions with a `touches` match by `rg`/`awk`, the excerpts file, the scratch folder, sources naming a territory, the product block, the packet's place.

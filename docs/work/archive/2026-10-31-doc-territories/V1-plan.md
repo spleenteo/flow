@@ -8,7 +8,7 @@ description: "Plan of V1: the changelog key accepts a map (path, labels, languag
 
 # V1 — The changelog adapts to the project — Plan
 
-**Mandate**: [V1-packet.md](V1-packet.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: none yet (no `lessons.md`) · **Execution rules**: [executor.md](../../../agents/executor.md)
+**Mandate**: [V1-packet.md](V1-packet.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: none yet (no `lessons.md`) · **Execution rules**: [executor.md](../../../../agents/executor.md)
 
 **Summary**
 1. T1 teaches `flow:docs` the map form of `changelog:` (path, labels, language, decisions layout), with defaults equal to today's entry, and the `rg`-based lookup of the work folder.

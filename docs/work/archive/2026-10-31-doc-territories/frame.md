@@ -57,5 +57,5 @@ A project grows across several repos and several tools: code in git, long-lived 
 ## Open questions
 
 - Where the declaration lives: `.flow.yml` keys per territory, or a file the project names. The tokens and per-user values never in a repo.
-- How a territory adapter relates to the default: it replaces it for that territory, as a preset replaces the shipped one ([stack presets are replaceable skills](../../decisions-log/2026-10-26-stack-presets-are-replaceable-skills.md)), or it can fall back to it.
+- How a territory adapter relates to the default: it replaces it for that territory, as a preset replaces the shipped one ([stack presets are replaceable skills](../../../decisions-log/2026-10-26-stack-presets-are-replaceable-skills.md)), or it can fall back to it.
 - Which kinds of document are territories: `work/` and `.version` probably stay in the repo, since they change with the code.

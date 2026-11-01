@@ -35,7 +35,7 @@ It is verified that a forked skill or subagent reliably reaches the session's MC
 
 ## References
 
-- [shaping](../work/2026-10-31-doc-territories/shaping.md)
+- [shaping](../work/archive/2026-10-31-doc-territories/shaping.md)
 
 ## Status log
 
