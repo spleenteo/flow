@@ -227,6 +227,9 @@ The archive goes to an `archive` territory through a new `op: archive` in the co
 - The cleared pending line is also restored on step 6's closed-guard stop and on `unmet`, not only on `unreachable` and `FAILED:`.
 - The resume route is not run headless; T3's throwaway-repo commands and a read-through check it.
 
+- After widening: M3 is met by restriction (`{step:}`/`{phase:}` values of a territory source are skipped and named; no new read moments), so M8 only needs the runner's source fields to hold repo files. M5 is met by labelling the pending line "as recorded, not re-checked". A second headless run checks H1's failed changelog write.
+- After review: `/flow:archive` outside the close offers Step 6 move 4 when it returns `archived` on a closed work; on a failed changelog write, a version file the write created is removed with `git clean -f -q -- <version_file>`.
+
 ## V8 — A leaner conductor, and the audit's lows
 
 **In**
