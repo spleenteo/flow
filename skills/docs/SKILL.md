@@ -39,6 +39,7 @@ The `ARGUMENTS:` text is a header line of `key: value` pairs, followed, for `dec
 | `file` | `decision-status`: the decision file, relative to `dir`; with `scratch`, the absolute path of the conductor's copy |
 | `status`, `superseded_by`, `resolved_by`, `note` | `decision-status`: the new status (`superseded` or `resolved`), the file name of the new decision (with `scratch`, its identifier) or the slug of the resolving work, and the one-line note for the status log |
 | `excerpts` | Absolute path of a scratch file the conductor wrote (`search`, `descriptions`, changelog ops). The paths outside `dir` this skill touches are `excerpts`, `scratch` and, with `scratch`, `file`. For `search` and `descriptions` it holds lines already in the return format, from a territory; for the changelog ops, the changelog's past entries read from a territory |
+| `repo-changelog` | `search`: `skip` leaves `<dir>/<changelog>` out of the `rg` call, because the changelog lives on a territory and a repo copy left behind is stale |
 | `install` | `decision-check`: `yes` copies the script into the repo |
 | `scratch` | Absolute path of an empty folder the conductor made, for `decision-write`, `decision-status` and `changelog-write` on a territory. The op writes its document there and commits none of it; `changelog-write` writes the version file and commits nothing either: the conductor commits it once the adapter holds the entry. Absent: the op works in the repo and commits, as described below |
 | `decision-ids` | `changelog-write`: `decisions:<id>` items of the work's decisions on a territory, comma-separated |
@@ -190,7 +191,7 @@ Search before reading, then read only what matches.
 - `layout: repo` (`<dir>/<changelog>` is the changelog's path): `rg -il "<keyword>" <dir>/<changelog> <dir>/<root>/decisions-log/ --glob '*.md' --glob '!README.md' <dir>/<root>/work/archived.md`, one keyword at a time or as an alternation. Never `<root>/work/archive/`.
 - `layout: project`: under `dir`, `rg -il "<keyword>" --glob '*/STATUS.md' --glob '*/decisions/*.md' --glob '*/lessons.md' <dir>`.
 
-`rg` always gets an explicit path; a `<changelog>` that does not exist is left out of the call. Read the matching files, and for each keep the lines that bear on the keywords.
+`rg` always gets an explicit path; a `<changelog>` that does not exist, or any `<changelog>` with `repo-changelog: skip`, is left out of the call. Read the matching files, and for each keep the lines that bear on the keywords.
 
 **`files`** (repo layout): the decisions in `<dir>/<root>/decisions-log/` are matched by their frontmatter, not by their text. For each decision file with a `touches:` line, split the list; an entry matches a requested file when, compared by whole path segments, it equals the file or is a parent directory of it (`src/menu` matches `src/menu/Item.tsx`, not `src/menu-old/x.ts`; ignore a trailing `/`). A path that appears only in the body doesn't count. Files with no `touches:` (legacy) never match by `files`. With both `keywords` and `files`, a file is a match when it matches either; the excerpt for a `files` match is the file's description. With `files` alone, `<root>/decisions-log/` is the only place searched.
 
