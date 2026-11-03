@@ -1,8 +1,8 @@
 ---
 status: open
-phase: impact
-slice: null
-step: null
+phase: slice
+slice: V1
+step: plan
 work: guidelines-folder
 stacks: [generic]
 base: main
@@ -33,3 +33,4 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 <!-- date — step — done — remaining — wall-clock — cost -->
 - 11-03 — opening — brief approved, home created on work/guidelines-folder — slicing next — — —
 - 11-03 — slicing — 4 slices in slices.md; fidelity check skipped (no frame) — impact next — — —
+- 11-03 — impact — 23 findings (4 high), all folded into slices.md; no split or reorder; 2 decisions recorded — plan V1 next — — —
