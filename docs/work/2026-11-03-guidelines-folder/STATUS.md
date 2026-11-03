@@ -1,6 +1,6 @@
 ---
 status: open
-phase: slicing
+phase: impact
 slice: null
 step: null
 work: guidelines-folder
@@ -19,7 +19,10 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 
 ## Slices
 
-- [ ] (defined during slicing)
+- [ ] V1 — The folder in the conductor
+- [ ] V2 — `sources:` goes away, with its upgrade
+- [ ] V3 — Guidelines on a territory, many documents
+- [ ] V4 — This repo adopts the folder; the docs show it
 
 ## Pending proposals
 
@@ -29,3 +32,4 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 
 <!-- date — step — done — remaining — wall-clock — cost -->
 - 11-03 — opening — brief approved, home created on work/guidelines-folder — slicing next — — —
+- 11-03 — slicing — 4 slices in slices.md; fidelity check skipped (no frame) — impact next — — —
