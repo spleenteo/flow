@@ -105,6 +105,58 @@ The mapped skill replaces the shipped one entirely. If it isn't available in the
 
 The same chain maps the design tool's adapter: `design=<skill>` is a pair like the others, but names a tool, not a stack. `design: pen` in `.flow.yml` selects the shipped adapter, `flow:design-pen`; a `design=` pair replaces it entirely.
 
+## Customizing a stack
+
+You don't need to know how Flow works inside to bend it to your project. Three things to know first, then the options.
+
+**Where the stack's guidelines live.** In the plugin, not in your repo. Each shipped stack is one skill, [`skills/stack-rails/SKILL.md`](skills/stack-rails/SKILL.md) for example, with five sections: `## Rules` (what the code must follow), `## Lenses` (what a change can break), `## Tests` (level and sensitive areas), `## Gate` (commands to run before a slice closes) and `## References`. Flow reads the skill when it needs it and hands its Rules to the agents that plan, write and review. Nothing is copied into your repo, except that on the first run Flow offers a draft of `docs/development-guidelines.md` built from the preset's Tests, Gate and References.
+
+**Where your own guidelines live.** In your repo, in files you own. They add to the preset; they don't edit it.
+
+**One file per stack, not one per topic.** A preset is a single `SKILL.md`. If you want `testing.md`, `deploy.md` and `naming.md` for Rails, keep them in your repo and point Flow at them (below).
+
+### Which option for which need
+
+| You want to | Do this | Effect |
+|---|---|---|
+| Add rules of your own, or say where you depart from the preset | Write them in `docs/development-guidelines.md`; put departures under `## Deviations`, with the reason | Agents get the sections that apply to each slice, next to the preset's Rules |
+| Add things a change can break here (public URLs, an export other teams import) | List them in `docs/impact-lenses.md` | Applied at impact and in every plan review, on top of the preset's lenses |
+| Give agents several documents, each at the right moment | `sources:` in `.flow.yml`, one entry per file with a `when` | The file reaches the agents only when the slice touches matching paths, or at the step you name |
+| Drop the shipped preset and use your own rules for a stack | Write your own preset skill and map it with `presets:` in `.flow.yml` | Replaces the shipped preset entirely |
+| Use the same replacement in all your projects | Same pair in the plugin option `stack_presets` | Applies wherever the project has no `presets:` of its own |
+
+### Several files for one stack
+
+Say you want three Rails documents. Put them in the repo and declare them:
+
+```yaml
+# .flow.yml
+sources:
+  - {path: docs/rails/testing.md,  when: ["spec/**", "test/**"]}
+  - {path: docs/rails/naming.md,   when: ["app/**"]}
+  - {path: docs/rails/deploy.md,   when: {step: close}}
+```
+
+`testing.md` and `naming.md` reach the agents of a slice whose files match the globs; `deploy.md` reaches only the closing step. Quote the globs, and commit the files: a source that is missing or not tracked by git is skipped, and Flow names it in its next message. A path-scoped source is read whole on every dispatch of the slice, so keep those files short and scope them narrowly. The full syntax of `when` is under [Configuration](#configuration).
+
+### Replacing a preset
+
+A preset is an ordinary skill. To replace `flow:stack-rails`, make a skill (in your own plugin, say `my-stacks:rails`) whose `SKILL.md` has the same five sections, then map it:
+
+```yaml
+# .flow.yml
+presets: [rails=my-stacks:rails]
+```
+
+Start from a copy of the shipped file. Mind the rules of the mapping:
+
+- It replaces; it never merges. Rules you want to keep must be in your copy.
+- If the mapped skill isn't installed in the session, Flow says so and does not fall back to the shipped preset.
+- The skill is invoked by its qualified name, so it must be installed as a plugin or a skill the session lists.
+- There is no switch to turn off a single shipped rule. To depart from one rule, write it under `## Deviations`; to drop several, replace the preset.
+
+Order of precedence, first hit wins: `presets:` in `.flow.yml`, then the `stack_presets` plugin option, then the shipped preset.
+
 ## What lands in a project
 
 Markdown only, versioned with the code, under `docs/` by default. A kind of document declared in `territories:` lives in its own tool instead; `work/` and `.version` always stay in the repo:
