@@ -205,7 +205,7 @@ A role whose definition is mid, dispatched on the top tier with no request and n
 
 Two environment variables beat all of this, and Flow can't see past them: `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` (with `CLAUDE_CODE_SUBAGENT_MODEL`) forces the model of every subagent ([model choice](https://code.claude.com/docs/en/sub-agents.md#choose-a-model), [one model for all](https://code.claude.com/docs/en/sub-agents.md#run-every-subagent-on-one-model)), and `CLAUDE_CODE_EFFORT_LEVEL` overrides every effort ([effort level](https://code.claude.com/docs/en/model-config.md#set-the-effort-level)). Name them to the user in one sentence when a model they asked for doesn't seem to apply.
 
-**Dispatch contract.** The prompt is the slice packet (or the conductor's own packet) verbatim at the top, then the step's sources, when `.flow.yml` declares some (`skills/dev/SKILL.md` § Sources), then the role's instruction. Paths in a packet or an instruction are expanded absolute paths, never variables: a subagent substitutes nothing. Every dispatch carries the packet in its prompt, except the slice runner, which gets the packet as a file.
+**Dispatch contract.** The prompt is the slice packet (or the conductor's own packet) verbatim at the top, then the role's instruction. Paths in a packet or an instruction are expanded absolute paths, never variables: a subagent substitutes nothing. Every dispatch carries the packet in its prompt, except the slice runner, which gets the packet as a file.
 
 **Ledger.** `<work dir>/V<n>-ledger.md`, written by the slice runner (the conductor in the fallback) and committed with the close.
 
