@@ -7,6 +7,7 @@ work: guidelines-folder
 stacks: [generic]
 base: main
 updated: 2026-11-04
+archived: 2026-11-04
 tags: [work, guidelines-folder]
 description: "A project's guidelines become a folder docs/guidelines/ of files with description and applies frontmatter, chosen per slice and named at the first stop; sources: is removed with an upgrade case; the guidelines territory becomes multi-document with no fallback; Flow's own repo adopts the folder first."
 ---

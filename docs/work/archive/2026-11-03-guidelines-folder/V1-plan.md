@@ -8,7 +8,7 @@ description: "Plan of V1: the conductor learns docs/guidelines/ beside sources:,
 
 # V1 — The folder in the conductor — Plan
 
-**Mandate**: [slices.md](slices.md) § V1, from Work 1 of [the brief](../../briefs/2026-11-03-guidelines-folder.md) · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: none yet (first slice) · **Execution rules**: [executor.md](../../../agents/executor.md) (Test policy, level `none`)
+**Mandate**: [slices.md](slices.md) § V1, from Work 1 of [the brief](../../../briefs/2026-11-03-guidelines-folder.md) · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: none yet (first slice) · **Execution rules**: [executor.md](../../../../agents/executor.md) (Test policy, level `none`)
 
 **Summary**
 1. T1 (critical) writes the `**Guidelines folder.**` paragraph in `skills/dev/SKILL.md` and, in the same commit, rewrites every sentence that reads the guidelines: the file travels whole, the folder adds its share. `sources:` and § Sources stay.

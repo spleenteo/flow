@@ -8,7 +8,7 @@ description: "Plan of V3: the guidelines territory becomes multi-document (list,
 
 # V3 — Guidelines on a territory, many documents — Plan
 
-**Mandate**: [slices.md](slices.md) § V3, from Work 1 of [the brief](../../briefs/2026-11-03-guidelines-folder.md) ("Guidelines on a territory") · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md) (Test policy, level `none`)
+**Mandate**: [slices.md](slices.md) § V3, from Work 1 of [the brief](../../../briefs/2026-11-03-guidelines-folder.md) ("Guidelines on a territory") · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md) (Test policy, level `none`)
 
 **Summary**
 1. T1 (critical) gives `shared/territories.md` § Fields the `applies` field and § Operations the `guidelines` rules: `read` with and without `name`, the `list` line format, `none`, `unmet: op list on guidelines`.

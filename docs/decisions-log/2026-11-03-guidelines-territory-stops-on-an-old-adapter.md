@@ -35,7 +35,7 @@ An adapter is maintained by someone who cannot update it in step with Flow, or a
 ## References
 
 - docs/briefs/2026-11-03-guidelines-folder.md
-- docs/work/2026-11-03-guidelines-folder/slices.md (V3)
+- docs/work/archive/2026-11-03-guidelines-folder/slices.md (V3)
 
 ## Status log
 

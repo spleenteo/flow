@@ -8,7 +8,7 @@ description: "Plan of V4: this repo's guidelines prose moves into docs/guideline
 
 # V4 — This repo adopts the folder; the docs show it — Plan
 
-**Mandate**: [slices.md](slices.md) § V4, from Work 1 of [the brief](../../briefs/2026-11-03-guidelines-folder.md) ("Flow's own repo", "Lenses") · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md) (Test policy, level `none`)
+**Mandate**: [slices.md](slices.md) § V4, from Work 1 of [the brief](../../../briefs/2026-11-03-guidelines-folder.md) ("Flow's own repo", "Lenses") · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md) (Test policy, level `none`)
 
 **Summary**
 1. T1 (critical) moves `## Naming`, `## Language`, `## Commits`, `## Releases` into four `docs/guidelines/` files with `applies: always`, adds `## References`, and repoints the two inbound `#releases` links.

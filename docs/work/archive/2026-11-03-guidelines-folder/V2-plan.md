@@ -8,7 +8,7 @@ description: "Plan of V2: sources: leaves the conductor, the runner, the contrac
 
 # V2 — `sources:` goes away, with its upgrade — Plan
 
-**Mandate**: [slices.md](slices.md) § V2, from Work 1 of [the brief](../../briefs/2026-11-03-guidelines-folder.md) ("`sources:` goes away", "Upgrade") · **Guidelines**: [development-guidelines.md](../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../agents/executor.md) (Test policy, level `none`)
+**Mandate**: [slices.md](slices.md) § V2, from Work 1 of [the brief](../../../briefs/2026-11-03-guidelines-folder.md) ("`sources:` goes away", "Upgrade") · **Guidelines**: [development-guidelines.md](../../../development-guidelines.md) · **Lessons**: [lessons.md](lessons.md) · **Execution rules**: [executor.md](../../../../agents/executor.md) (Test policy, level `none`)
 
 **Summary**
 1. T1 (critical) removes § Sources from `skills/dev/SKILL.md`, moves its glob rule into § Guidelines folder and removes every citation of it.

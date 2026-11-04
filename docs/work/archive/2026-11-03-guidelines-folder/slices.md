@@ -6,7 +6,7 @@ description: "Slices of the guidelines-folder work: the folder in the conductor,
 
 # Guidelines folder — Slices
 
-Mandate: Work 1 of [`docs/briefs/2026-11-03-guidelines-folder.md`](../../briefs/2026-11-03-guidelines-folder.md) ("What changes", Goals, Non-goals, Anti-goals, Calls, Left to the builder). The project is a plugin of Markdown skills: a slice is "done" when the text says what the brief says, the gate of `docs/development-guidelines.md` is green, and a read-through finds no skill contradicting another.
+Mandate: Work 1 of [`docs/briefs/2026-11-03-guidelines-folder.md`](../../../briefs/2026-11-03-guidelines-folder.md) ("What changes", Goals, Non-goals, Anti-goals, Calls, Left to the builder). The project is a plugin of Markdown skills: a slice is "done" when the text says what the brief says, the gate of `docs/development-guidelines.md` is green, and a read-through finds no skill contradicting another.
 
 Order: V1 → V2 → V3 → V4. V1 adds the folder while `sources:` still exists; V2 removes `sources:` and adds its upgrade; V3 moves the folder onto a territory; V4 makes this repo and its docs the first user.
 

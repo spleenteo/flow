@@ -37,7 +37,7 @@ A real case needs a document that must reach one role only (the planner alone, t
 ## References
 
 - [brief](../briefs/2026-11-03-guidelines-folder.md)
-- [slices](../work/2026-11-03-guidelines-folder/slices.md)
+- [slices](../work/archive/2026-11-03-guidelines-folder/slices.md)
 
 ## Status log
 
