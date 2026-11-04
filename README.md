@@ -272,7 +272,7 @@ claude --plugin-dir ./flow
 
 `--plugin-dir` loads the clone for one session in place of the installed `flow` ([flags that load a plugin for one session](https://code.claude.com/docs/en/plugins/cli-reference#flags-that-load-a-plugin-for-one-session)).
 
-Read the [Releases](docs/development-guidelines.md#releases) rules before changing anything. A merge into `main` is a release, because projects declare the marketplace without a `ref`. Never add the marketplace from the clone you are editing: a local marketplace loads in place, so every session would run the conductor from the files you are editing. The guidelines, the Gate and the commit rules: [`docs/development-guidelines.md`](docs/development-guidelines.md).
+Read the [Releases](docs/guidelines/releases.md) rules before changing anything. A merge into `main` is a release, because projects declare the marketplace without a `ref`. Never add the marketplace from the clone you are editing: a local marketplace loads in place, so every session would run the conductor from the files you are editing. The tests and the Gate: [`docs/development-guidelines.md`](docs/development-guidelines.md); the commit rules: [`docs/guidelines/commits.md`](docs/guidelines/commits.md); the rest in `docs/guidelines/`.
 
 ## Update
 

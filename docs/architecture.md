@@ -54,7 +54,7 @@ So a project `ref` overrides the user's entry, and two projects on different tag
 
 What a teammate gets from that file: the marketplace is registered only after they accept the workspace trust dialog for the folder ([`extraKnownMarketplaces`](https://code.claude.com/docs/en/settings-reference#extraknownmarketplaces)). A plugin enabled only in project settings is not fetched onto a machine where it isn't installed, unless its marketplace entry has a relative-path source, as `flow` does ([enabled in project settings but not installed](https://code.claude.com/docs/en/plugins/loading#enabled-in-project-settings-but-not-installed)). The dependencies are not enabled by the file; the start check tells the teammate what to install ([Where the plugin ends](#where-the-plugin-ends)).
 
-Releases: work happens on branches, and a merge into `main` is a release, tagged `vVERSION` (the content of `.version`) on the merge commit. The rules are in [`development-guidelines.md`](development-guidelines.md#releases). Third-party marketplaces don't auto-update by default; a user picks up a release when the marketplace is updated ([keep plugins updated](https://code.claude.com/docs/en/plugins/install#keep-plugins-updated)).
+Releases: work happens on branches, and a merge into `main` is a release, tagged `vVERSION` (the content of `.version`) on the merge commit. The rules are in [`guidelines/releases.md`](guidelines/releases.md). Third-party marketplaces don't auto-update by default; a user picks up a release when the marketplace is updated ([keep plugins updated](https://code.claude.com/docs/en/plugins/install#keep-plugins-updated)).
 
 ## The `/flow:dev` lifecycle
 
