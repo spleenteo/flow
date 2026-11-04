@@ -206,7 +206,7 @@ Resuming reloads the **standing documents**, and nothing else:
 | design | `shaping.md`, `docs/design/README.md` |
 | slicing | `shaping.md`, or `breadboard.md` when breadboarding slices |
 | impact | `slices.md`, in full |
-| plan | `docs/impact-lenses.md`, the decisions matched by the slice's `files:`, the sources matched by the slice's paths and the `docs/guidelines/` files chosen for the slice (§ Guidelines folder); (lenses, decisions and sources through the adapter when declared) |
+| plan | `docs/impact-lenses.md`, the decisions matched by the slice's `files:`, the sources matched by the slice's paths and the `docs/guidelines/` files chosen for the slice (§ Guidelines folder); lenses, decisions and sources come through the adapter when declared |
 | review | the plan's header only; its **Files** line re-matches the decisions, the sources and the `applies` globs of `docs/guidelines/` |
 | execute | `rg -n '^## Close draft' <ledger>`: a match goes to the close, no runner; else, if a `flow:slice-runner` was dispatched earlier in this conversation and hasn't returned, wait for its notification and never dispatch again; else the runner (the ledger tells which tasks are complete, and they are never dispatched again), then § step: execute from move 2 (move 3 says which packet file is read and how it is rebuilt). In a new session, the resume message also asks whether another session still runs the slice (the user can see it in `/tasks`): never a second runner |
 | close | the ledger from `Final review:` on, with the `pending:` lines just before it: `Final review:`, `Gate:` and `## Close draft` |
