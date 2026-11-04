@@ -1,0 +1,73 @@
+# Ledger — V2
+(printenv: CLAUDE_CODE_SUBAGENT_MODEL_FORCE and CLAUDE_CODE_SUBAGENT_MODEL unset)
+
+- T1 · flow:executor · definition: sonnet · DONE · c41c09a
+  Status: DONE. Commits: c41c09a Remove § Sources from the conductor and move the glob rule into the guidelines folder. Tests: none: level none (four Verified rg checks as expected). Servers: none.
+  Concerns: deleted the § Sources block with a short Python in-place write (not sed -i), boundaries checked by text, diff read (19+/32-).
+- T5 · flow:executor · definition: sonnet · DONE · 4926e57
+  Status: DONE. Commits: 4926e57 Drop territory sources from the territories contract. Tests: none: level none (both Verified rg checks as expected). Servers: none.
+  Concerns: no other citation of the deleted paragraph in territories.md; "Sources naming" absent repo-wide outside docs/work/.
+- T1 review · flow:task-reviewer · opus (top tier, critical) · Spec pass, Quality pass · No findings. Only remaining `§ Sources` citation repo-wide is shared/work.md:208 (T3's).
+- T1: complete
+- T5 review · flow:task-reviewer · opus (top tier, critical) · Spec pass, Quality pass · No findings. Note: agents/slice-runner.md:22 "(a territory source travels in the packet…)" goes with T3's deletion of that line.
+- T5: complete
+- T6 · flow:executor · definition: sonnet · DONE · ba2c51b
+  Status: DONE. Commits: ba2c51b Point the template and the architecture page at the guidelines folder. Tests: none: level none (three Verified rg checks as expected). Servers: none. Concerns: none.
+- T2 · flow:executor · definition: sonnet · DONE · a469d51
+  Status: DONE. Commits: a469d51 Convert the sources: key in the upgrade. Tests: none: level none (check block run in scratchpad: this repo → `upgrade check: done` alone; sources: throwaway → `main:.flow.yml:1:sources: …` + done; ## Naming throwaway → done alone; rg sources in work.md: :208 and § Upgrade only). Servers: none.
+  Concerns: did not read the slice's shared/work.md item for the Done read-through; link check/validate not run; scratch dirs ta, tb left (rm refused); frontmatter awk adapted inline. Asking = the **Asking.** paragraph of ## Upgrade; sources reads in its second paragraph.
+- T2 review · flow:task-reviewer · opus (top tier, critical) · Spec pass, Quality fail · medium: heading grep hits YAML comments in frontmatter (:437); no destination check for the collision (:437 vs :418); process: DONE while Done read-through skipped. low: awk can't tell unclosed block (raised, see Ruling); outbound links http/#anchor filtering; "line-only" vs .flow.yml/blocks (raised); :405 scope sentence; collision "neither is moved"; "at its new path" in collision case; Resume (b) wording; mixed entries' {step}/{phase} (raised); report length. Reviewer did the bullet-by-bullet read-through: all covered.
+- T2 fix round 1 · flow:executor (same, SendMessage) · definition: sonnet · DONE · 711a36b
+  Status: DONE. Commits: 711a36b Fix review findings on T2: heading read past the block, destination check, block end, reads wording, mixed entries. Tests: awk on frontmatter-with-comment, no frontmatter, unclosed block; check block three cases as expected. Servers: none. Concerns: unclosed block signalled only by a missing end: line. New wording: "they print lines, `.flow.yml` and frontmatter blocks only, never a file's body".
+- T2 review round 1 · flow:task-reviewer · opus · Spec pass, Quality pass · medium: unrequested "end past 11 = no frontmatter" rule, off by one, would write a second block; unclosed block's basename fallback unstated. low: cat-file -e output signalling (logged); report length (logged).
+- T2 fix round 2 · flow:executor (same, SendMessage) · definition: sonnet · DONE · ecdf111
+  Status: DONE. Commits: ecdf111 Fix review findings on T2: any end line means a block to merge into, unclosed block falls back to the basename. Tests: awk on a block closing at 12 (`end: 12`, `13: # T`) and an unclosed block. Servers: none. Concerns: none.
+- T2 review round 2 · flow:task-reviewer · opus · Spec pass, Quality pass · low: report lacks Files:; basename fallback stated only for the unclosed block, not for a file with no `#` line (logged). README item 4 byte-identical to work.md :409.
+- T2: complete
+- T4 · flow:executor · definition: sonnet · DONE_WITH_CONCERNS · b759e38
+  Status: DONE_WITH_CONCERNS. Commits: b759e38 Say what the upgrade may read before territories. Tests: none: level none (`§ Upgrade › Asking` count 2; sources rg only the two allowed). Servers: none.
+  Concerns: Asking also reads the frontmatter block (≤10 lines, awk), cat-file -e, grep -n refs/links, ^## list; "line-only" in § Dependencies is narrower than the frontmatter-block read.
+Ruling: T2 review lows 4 (awk prints the closing line), 6 ("line-only" vs .flow.yml and frontmatter blocks) and 11 (mixed entries' {step}/{phase} values named) raised to medium and fixed in round 1 with mediums 1–2; lows 5, 7–10, 12 logged — 4 is what medium 1's fix needs to search past the block, 6 is the read set T4's § Dependencies sentence cites, 11 is the mandate's "dropped and named" — cost if wrong: a few extra words in one fix commit
+- T3 · flow:executor · definition: sonnet · DONE · a2ea75e
+  Status: DONE. Commits: a2ea75e Drop the sources from the dispatch contract and the slice runner. Tests: none: level none (rg sources in slice-runner.md empty; "then the role's instruction" one line each, work.md:208, slice-runner.md:28). Servers: none.
+  Concerns: none; read SKILL.md :326 (move 4 fields) and :341/:343 (executor and reviewer bullets) for agreement.
+- T4 review · flow:task-reviewer · definition: sonnet · Spec fail, Quality pass · medium: "line-only" narrower than Asking's reads (.flow.yml, frontmatter blocks); Writing's whole-file read of a moved file not covered. low: :113 sentence redundant once fixed (logged).
+- T4 fix round 1 · flow:executor (same, SendMessage) · definition: sonnet · DONE · a239d93
+  Status: DONE. Commits: a239d93 Fix review findings on T4: cover Writing and Asking's own wording. Tests: `§ Upgrade › Asking` count 2; sources rg only the two allowed. Servers: none. Concerns: did not re-read changed lines after edit.
+- T4 review round 1 · flow:task-reviewer · definition: sonnet · Spec pass, Quality pass · No findings; every § Upgrade read now allowed.
+- T4: complete
+- T3 review · flow:task-reviewer · definition: sonnet · Spec pass, Quality pass · No findings; SKILL.md move 4 fields and loop bullets agree with slice-runner.md.
+- T3: complete
+- T7 · flow:executor · definition: sonnet · DONE · 6794671
+  Status: DONE. Commits: 6794671 Stop the README describing sources: outside the upgrade. Tests: none: level none (rg sources/`when` README: item 4 only, :258; docs/guidelines/ at :116, :124, :130; conversion count 1 each, work.md paragraph a substring of item 4; link check on README clean). Servers: none.
+  Concerns: copied the whole two-sentence `sources:` paragraph (as the plan's conversion text has it).
+- T7 review · flow:task-reviewer · definition: sonnet · Spec pass, Quality pass · No findings; item 4 holds work.md's two-sentence paragraph exactly (plan :25 defines it so).
+- T7: complete
+- T6 review · flow:task-reviewer · definition: sonnet · Spec pass, Quality pass · No findings.
+- T6: complete
+Ruling: final review lows 3 (SKILL.md:101 "the old configuration key" ambiguous with `stack:`) and 4 (README item 4 omits work branches holding a `sources:` key) go to the final-review fix with the two mediums; low 5 (internal terms in item 4) left for V4 — 4 is Done item 5's read-through, 3 is a one-phrase fix in a line already touched — cost if wrong: a few extra words in one commit
+Ruling: the final-review fix review's remaining medium (conversion paragraph work.md:409 and README item 4 omit the new too-long "not moved" case of row :418) goes to one more fresh executor with its two lows (too-long case doesn't say the frontmatter is still written; plan :72 missing full stop) — it breaks Done item 5's read-through, and the fix is one phrase in both copies — cost if wrong: one extra commit and review
+Ruling: the gate's link check, run before the fix, prints `shared/work.md -> \`` and two lines for V2-plan.md (a literal close-bracket-paren pair inside inline code at work.md:437 and plan :28; the plan's :72 quotes the README's link to skills/dev/SKILL.md, which resolves from the repo root, not the work folder); the same fresh executor rewords them (a "Markdown link" in words; the plan's quoted link without its link syntax), meaning unchanged — the link check doesn't skip inline code, and the plan's quotes are records, not links — cost if wrong: the plan's T7 text reads a little less literally
+
+- Final review · flow:task-reviewer · opus (top tier) · Spec pass, Quality fail · medium: merged frontmatter can outgrow SKILL.md:54's ten-line limit, so a moved file would be skipped (work.md:418/:437); `applies` form unstated (:418). low: SKILL.md:101 "the old configuration key" ambiguous with `stack:`; README item 4 omits work branches holding a `sources:` key; item 4's internal terms (V4); reports lack Files:. Done item 1's rg leaves only the allowed set; no dangling citations repo-wide.
+- Final review fix · flow:executor (fresh) · definition: sonnet · DONE_WITH_CONCERNS · bdb87cf, 59bd433
+  Status: DONE_WITH_CONCERNS. Commits: bdb87cf Fix review findings on V2: merged frontmatter placement and limit, applies form, upgrade wording and links; 59bd433 Fix review findings on V2: plan wording that broke the link check. Tests: link check clean on touched files; SKILL.md sources rg two allowed; Asking count 2; conversion paragraph exact substring of README item 4; validate passes. Servers: none. Concerns: two link-check lines from the ledger's own ruling (reworded by the runner).
+- Final review fix review · flow:task-reviewer · opus · Spec fail, Quality pass · medium: conversion paragraph (work.md:409, README:258) omits the new too-long "not moved" case. low: too-long case doesn't say the frontmatter is still written; plan :72 missing full stop; report length.
+- Final review fix 2 · flow:executor (fresh) · definition: sonnet · DONE · a6e627f
+  Status: DONE. Commits: a6e627f Fix review findings on V2: frontmatter-too-long case in the conversion text, plan full stop. Tests: byte comparison exact, found once; new clause count 1 in each file; link check empty. Servers: none. Concerns: none.
+- Final review fix 2 review · flow:task-reviewer · opus · Spec pass, Quality pass · low: V2-plan.md:25 still holds the old conversion sentence (logged); work.md:418 "like a collision" could suggest a git mv for a too-long file (logged).
+Gate run (runner): validate passes with the expected warnings plus untracked .DS_Store and docs/.DS_Store; old names only in README.md (§ Upgrading) and shared/work.md (§ Upgrade, from :387); link check, with the work's packet narrowing, prints nothing. Done item 1: the rg, with Deviation 1's filter, leaves only shared/work.md § Upgrade, README item 4, "When sources disagree", "Content sources" and the architecture link line. Done item 2: check block → this repo `upgrade check: done` alone; sources: throwaway `main:.flow.yml:1:sources: […]` then done; ## Naming throwaway done alone. Done item 5: dispatch agreement read by the T3 review and the final review; README item 4 and § Upgrade byte-identical on the conversion text, branch and resume sentences aligned.
+pending: With a clone of this repo in the scratchpad at this branch and `claude --plugin-dir <clone>`, `/flow:dev` on a throwaway repo whose `.flow.yml` holds three entries (a glob, a `{step: plan}`, a `{territory, name}`) reaches the upgrade's Asking message, which names the move, the two dropped entries and the key removal.
+Final review: done
+Gate: green — validate passes with the expected warnings (missing version, missing icon, marketplace manifest) plus untracked .DS_Store and docs/.DS_Store; old names only in README § Upgrading and shared/work.md § Upgrade; link check prints nothing with the work's narrowing --glob '!docs/work/2026-11-03-guidelines-folder/*-packet.md'
+
+## Close draft
+
+Narrative: `sources:` left the conductor, the runner, the contract, the template, the architecture page and the README. § Sources is gone from skills/dev/SKILL.md, its glob rule moved verbatim into the Guidelines folder paragraph, and every dispatch now reads "packet, then the role's instruction". shared/work.md § Upgrade gained the conversion: the check prints only the `sources:` key line, the Asking reads stay git-only and never print a file's body, the Rewritten rows move glob entries into <root>/guidelines/ with a drafted description and a flow-list `applies`, and drop the rest by name. README item 4 carries the conversion text byte for byte. SKILL.md's two upgrade sentences point at § Upgrade › Asking and Writing. Reviews kept tightening § Upgrade's shell. The heading grep could pick a YAML comment, so it became an awk that reads past the block and prints an `end:` line. Collisions needed a destination check. A rule added in round 1 ("past line 11 = no frontmatter") would have written a second block, so it was dropped. The final review found that a merged frontmatter could outgrow SKILL.md's ten-line limit and the moved file would then be skipped: such a file now stays in place and is named. The gate's link check caught a literal close-bracket-paren pair inside inline code in work.md and in the plan, which were reworded. Ruled: three of T2's lows raised and fixed in round 1; the final review's two lows fixed with its mediums; one more fresh executor to align the conversion paragraph with the table row. Left as follow-ups: V2-plan.md:25 keeps the earlier conversion sentence; "like a collision" at work.md:418 could suggest a `git mv` for a too-long file; item 4's internal terms are for V4.
+Lessons:
+- The link check doesn't skip inline code: never write a literal close-bracket-paren pair in prose or backticks; say "a Markdown link".
+- A review fix that adds a rule of its own (a limit, an exception) gets checked against every place the same rule is stated (SKILL.md's frontmatter limit, the conversion paragraph, the README copy) before it passes.
+- When one paragraph is copied verbatim into another file, every fix to the rule it summarises edits both copies in the same commit and compares the bytes.
+- A fix-round instruction that rewords a phrase another file cites (T4's "line-only") names the citing file, so both change together.
+- Shell in a skill (greps, awk) is run in a scratchpad throwaway on each edge case it names (comment in frontmatter, no frontmatter, unclosed block) before the review, not after.
+Decision candidate: none
