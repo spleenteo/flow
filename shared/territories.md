@@ -78,9 +78,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 | Resume (standing documents) | `decisions` | descriptions, keywords from `STATUS.md`'s `description:` |
 | Impact; slice packet; resume at `step: plan` | `decisions` | descriptions with the slice's files |
 | Impact; slice packet; resume at `step: plan` | `lenses` | `op: read` |
-| Impact; slice packet; resume at `step: plan` | a matched source naming a territory | `op: read` with `name` |
 | After the plan, before the review dispatch | `decisions` | descriptions again, with the planner's `Files:` |
-| After the plan, before the review dispatch | a newly matched source naming a territory | `op: read` with `name` |
 | Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
 | Close, changelog step | `changelog` | `op: read` |
 | Close, changelog step | `decisions` | `op: list`, for the ids (§ Writes › Changelog) |
@@ -99,17 +97,9 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 **Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind. A `read` that returns `missing` means there are no guidelines yet: the profile asks the level, and the `## Tests` write sends a new file holding only `## Tests` (§ Writes). A `lenses` `read` that returns `missing` reads as an absent `impact-lenses.md`: project lenses: none.
 
-**Sources naming a territory.** A `sources:` entry may carry `{territory: <kind>, name: <name>, when: …}` in place of `path`:
-
-```yaml
-sources: [{territory: product, name: voice, when: ["app/**"]}]
-```
-
-An undeclared kind is skipped and named. There is no `git ls-files` check. Its `when` holds globs only: a `{step: …}` or `{phase: …}` value is skipped and named, since no row above reads a territory source for a step or a phase. The packet heading is `### <kind>:<name>`, with the text of its copy verbatim.
-
 **Product.** When `product` is declared, the conductor reads it through one adapter invocation, `op: read; kind: product` with `op: none` lines for the other declared kinds that adapter serves. It copies the result to the scratch folder and never reads the territory's files directly. For `framing-doc` and `shaping` only, it builds a block named `` `## Product context` `` just before the invocation, from the copy's text verbatim, inside the prompt the tool receives, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. The block's first line, right under its heading, word for word: ``Context only: cite it as `product:<name>`, never copy its text into the document you write.`` (`<name>` is the read's name, `document` when none). Undeclared or `missing`: nothing.
 
-**Packet place.** When `territories:` declares `decisions`, `guidelines` or `lenses`, or a matched source names a territory, `V<n>-packet.md` goes in the scratch folder, else in `<work dir>/` as without territories. The ledger's head gets a third line, `Packet: <path>`. Close adds the packet to the work's commit only from the work dir. A resume at execute whose scratch packet is gone rebuilds it in this session's scratch folder, and a `Ruling:` line records the new path.
+**Packet place.** When `territories:` declares `decisions`, `guidelines` or `lenses`, `V<n>-packet.md` goes in the scratch folder, else in `<work dir>/` as without territories. The ledger's head gets a third line, `Packet: <path>`. Close adds the packet to the work's commit only from the work dir. A resume at execute whose scratch packet is gone rebuilds it in this session's scratch folder, and a `Ruling:` line records the new path.
 
 ## Writes
 
