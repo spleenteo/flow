@@ -67,23 +67,25 @@ Every request carries `op`, `kind` and `where`; `write` is carried when declared
 
 What the conductor fetches through an adapter for a declared kind, and how it hands the result on. An undeclared kind reads as without `territories:`.
 
-**By moment.** Each row is one request line per kind.
+**By moment.** Each row names a kind's requests at that moment; how many invocations they take is in § Reads › One invocation per adapter per step.
 
 | Moment | Kind | Request |
 |---|---|---|
-| Opening or resume, before the profile | `guidelines` | `op: read` |
+| Opening or resume, before the profile | `guidelines` | `op: read` with no `name` (the guidelines file) and `op: list`; then `op: read` with `name` for each `applies: always` document |
 | Opening, Step 1's memory search | `decisions`, `changelog`, `archive` | `op: search`, with the request's keywords |
 | Opening, Step 1's slug check | `archive` | `op: list`, matched on `work` anchored (§ Operations) |
 | `/flow:archive` step 2 | `changelog`, `decisions` | `changelog`: `op: read`; `decisions`: `op: list` |
 | Resume (standing documents) | `decisions` | descriptions, keywords from `STATUS.md`'s `description:` |
 | Impact; slice packet; resume at `step: plan` | `decisions` | descriptions with the slice's files |
 | Impact; slice packet; resume at `step: plan` | `lenses` | `op: read` |
+| Impact; slice packet; resume at `step: plan` | `guidelines` | `op: list`; then `op: read` with `name` for each document chosen (§ Reads › Guidelines on a territory) |
 | After the plan, before the review dispatch | `decisions` | descriptions again, with the planner's `Files:` |
+| After the plan, before the review dispatch | `guidelines` | `op: read` with `name` for each document whose `applies` now matches, on the slice's `list` result (the latest `guidelines` `list` result of this session; a document already read with `name` this session is reused from its scratch copy) |
 | Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
 | Close, changelog step | `changelog` | `op: read` |
 | Close, changelog step | `decisions` | `op: list`, for the ids (§ Writes › Changelog) |
 
-**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. The conductor copies each `read` and `results:` file it keeps into the scratch folder (each `read` as `<kind>/<name>.md`, `<kind>/document.md` for a single document); reuse and `excerpts:` point only there. A result already in the scratch folder this session is reused (the `list` result within a slice; the `product` copy for every block of the session; a resume in a fresh session has none, so it reads the guidelines again).
+**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. The exception is a `guidelines` `list`: the `read`s with `name` it decides go in one more invocation of that adapter, right after, with `op: none` for its other declared kinds, and none is made when it decides no read. The other exception is § Writes › Status change (`read`, then `write`). The conductor copies each `read` and `results:` file it keeps into the scratch folder (each `read` as `<kind>/<name>.md`, a `/` in the name kept as folders, `<kind>/document.md` for a read with no `name`); reuse and `excerpts:` point only there. A result already in the scratch folder this session is reused (the `list` result within a slice; the `product` copy for every block of the session; a resume in a fresh session has none, so it reads the guidelines again).
 
 **Descriptions** are an `op: search` (keywords) plus an `op: list` (no filter) in one invocation. The conductor does the `touches` match on the `list` results file with `rg` or `awk`, by `flow:docs` § Op `search` › `files`'s rule; a block of ten lines or fewer is matched as returned. It reads only the matched lines. It keeps the search hits and the matches, one line each:
 
@@ -95,7 +97,7 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read or write and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
-**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind. A `read` that returns `missing` means there are no guidelines yet: the profile asks the level, and the `## Tests` write sends a new file holding only `## Tests` (§ Writes). A `lenses` `read` that returns `missing` reads as an absent `impact-lenses.md`: project lenses: none.
+**Guidelines on a territory.** `## Tests` and `## Gate` come from the guidelines file's `read` (no `name`): no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind. A `read` with no `name` that returns `missing` means there is no guidelines file yet: the profile asks the level, and the `## Tests` write sends a new file holding only `## Tests` (§ Writes). A `lenses` `read` that returns `missing` reads as an absent `impact-lenses.md`: project lenses: none. `where` is what the project declared; how the guidelines file and the folder's documents sit there is the adapter's choice. Selection and skips are `/flow:dev`'s (`skills/dev/SKILL.md`, § Guidelines folder), applied to the `list` lines in place of the frontmatter (`description: null`, an `applies` neither globs nor `always`, and the name `document` count as skips). On `none`, no document of the folder is read or put in the packet, and the step goes on. Each chosen document goes under the packet's `## Guidelines` as `### guidelines:<name>`, sorted by name, with its scratch copy's text verbatim; the first stop names it `guidelines:<name>`.
 
 **Product.** When `product` is declared, the conductor reads it through one adapter invocation, `op: read; kind: product` with `op: none` lines for the other declared kinds that adapter serves. It copies the result to the scratch folder and never reads the territory's files directly. For `framing-doc` and `shaping` only, it builds a block named `` `## Product context` `` just before the invocation, from the copy's text verbatim, inside the prompt the tool receives, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. The block's first line, right under its heading, word for word: ``Context only: cite it as `product:<name>`, never copy its text into the document you write.`` (`<name>` is the read's name, `document` when none). Undeclared or `missing`: nothing.
 
