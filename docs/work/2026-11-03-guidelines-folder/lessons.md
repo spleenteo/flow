@@ -17,3 +17,10 @@ One rule per line, read by every later subagent.
 - When one paragraph is copied verbatim into another file, every fix to the rule it summarises edits both copies in the same commit and compares the bytes.
 - A fix-round instruction that rewords a phrase another file cites (T4's "line-only") names the citing file, so both change together.
 - Shell in a skill (greps, awk) is run in a scratchpad throwaway on each edge case it names (comment in frontmatter, no frontmatter, unclosed block) before the review, not after.
+
+## From V3
+
+- A plan's skip written as "neither X nor Y" names every value the format allows (`null` included) before it goes to an executor.
+- When a fix changes what a value means in the contract (`applies: null`), grep the conductor for the paragraph that maps the same values before the fix passes: SKILL.md:52 restated it and needed its own round.
+- An executor that skips a Verified item (the "agrees with § X" read) reports DONE_WITH_CONCERNS, never DONE; say so in the instruction's last line.
+- A read-only task with no commit (a read-through, a gate run) says in the plan that it gets no task review, so the runner needs no ruling.

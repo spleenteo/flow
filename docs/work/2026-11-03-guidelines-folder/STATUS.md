@@ -1,8 +1,8 @@
 ---
 status: open
 phase: slice
-slice: V3
-step: execute
+slice: V4
+step: plan
 work: guidelines-folder
 stacks: [generic]
 base: main
@@ -21,7 +21,7 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 
 - [x] V1 — The folder in the conductor (2026-11-04)
 - [x] V2 — `sources:` goes away, with its upgrade (2026-11-04)
-- [ ] V3 — Guidelines on a territory, many documents
+- [x] V3 — Guidelines on a territory, many documents (2026-11-04)
 - [ ] V4 — This repo adopts the folder; the docs show it
 
 ## Pending proposals
@@ -36,3 +36,4 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 - 11-03 — impact — 23 findings (4 high), all folded into slices.md; no split or reorder; 2 decisions recorded — plan V1 next — — —
 - 11-04 — V1 close — 7 commits, gate green (link check narrowed to skip this work's packets; V4 makes it permanent), 5 lessons, no decision — V2 plan next — ~17 min runner — —
 - 11-04 — V2 close — 13 commits, gate green, final review done, pending --plugin-dir upgrade run passed headless, 5 lessons, no decision — V3 plan next — ~48 min runner — —
+- 11-04 — V3 close — 6 commits (2 fix rounds, same applies: null gap), gate green, final review done (lows only), 4 lessons, no decision — V4 plan next — ~19 min runner — —

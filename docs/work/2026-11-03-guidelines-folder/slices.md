@@ -138,6 +138,10 @@ Commits: c41c09a, 4926e57, ba2c51b, a469d51, b759e38, 711a36b, ecdf111, a2ea75e,
 - The skip rule also covers an invalid `applies` and the name `document`, as SKILL.md's repo rule does.
 - After the plan, the re-match on a territory takes the latest `guidelines` `list` result of this session and reuses named reads already in scratch (plan review: a fresh `list` would never fire, since every resume runs one).
 
+**V3 — done on 2026-11-04**
+
+The guidelines territory became multi-document. `shared/territories.md` gained the `applies` field, an `op: list` line format for `guidelines`, `op: read` by name, the `unmet: op list on guidelines` stop at § Resolution (linked to the decision of 2026-11-03), three § Reads rows and the one-invocation exception stated once in § Reads › One invocation per adapter per step, with § Resolution and § Writes pointing at it; `skills/dev/SKILL.md` names the adapter path at every place it reads guidelines. Two review rounds came from one gap: the plan's skip "an `applies` neither globs nor `always`" caught `applies: null`, so T2's round made `applies: null` read as no `applies`, and T4's round rewrote SKILL.md's folder paragraph, which had called the `list` lines equivalent to the frontmatter, to follow the contract's mapping. T5, read-only, got no task review by ruling. The final review passed with lows only, logged (when an adapter emits `applies: null`, the later-step stop wording, the two reuse rules, "the guidelines file" defined late, some SKILL.md phrasing). An adapter serving `guidelines` must now answer `op: list` with one line per document of the folder, `<name> — applies: <globs | always | null>; description: <d>`, and `op: read` with `name: <name>`, while `op: read` with no `name` still returns the guidelines file; one that can't returns `unmet: op list on guidelines`, and Flow stops.
+
 ---
 
 ## V4 — This repo adopts the folder; the docs show it
