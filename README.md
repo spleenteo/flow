@@ -113,7 +113,7 @@ You don't need to know how Flow works inside to bend it to your project. Three t
 
 **Where your own guidelines live.** In your repo, in files you own. They add to the preset; they don't edit it.
 
-**One file per stack, not one per topic.** A preset is a single `SKILL.md`. If you want `testing.md`, `deploy.md` and `naming.md` for Rails, keep them in your repo and point Flow at them (below).
+**One file per stack, not one per topic.** A preset is a single `SKILL.md`. If you want `testing.md`, `deploy.md` and `naming.md` for Rails, keep them in your repo and put them in `docs/guidelines/` (below).
 
 ### Which option for which need
 
@@ -121,23 +121,22 @@ You don't need to know how Flow works inside to bend it to your project. Three t
 |---|---|---|
 | Add rules of your own, or say where you depart from the preset | Write them in `docs/development-guidelines.md`; put departures under `## Deviations`, with the reason | Agents get the sections that apply to each slice, next to the preset's Rules |
 | Add things a change can break here (public URLs, an export other teams import) | List them in `docs/impact-lenses.md` | Applied at impact and in every plan review, on top of the preset's lenses |
-| Give agents several documents, each at the right moment | `sources:` in `.flow.yml`, one entry per file with a `when` | The file reaches the agents only when the slice touches matching paths, or at the step you name |
+| Give agents several documents, each for the slices that need it | Put them in `docs/guidelines/`, each opening with a `description` and, optionally, `applies` | A file reaches a slice's agents when its globs match the slice's paths, when its description fits the slice, or always (`applies: always`); the first stop names the files chosen |
 | Drop the shipped preset and use your own rules for a stack | Write your own preset skill and map it with `presets:` in `.flow.yml` | Replaces the shipped preset entirely |
 | Use the same replacement in all your projects | Same pair in the plugin option `stack_presets` | Applies wherever the project has no `presets:` of its own |
 
 ### Several files for one stack
 
-Say you want three Rails documents. Put them in the repo and declare them:
+Say you want three Rails documents. Put them in `docs/guidelines/`, each opening with a frontmatter block. For `docs/guidelines/rails/testing.md`:
 
 ```yaml
-# .flow.yml
-sources:
-  - {path: docs/rails/testing.md,  when: ["spec/**", "test/**"]}
-  - {path: docs/rails/naming.md,   when: ["app/**"]}
-  - {path: docs/rails/deploy.md,   when: {step: close}}
+---
+description: How we write and run specs
+applies: ["spec/**", "test/**"]
+---
 ```
 
-`testing.md` and `naming.md` reach the agents of a slice whose files match the globs; `deploy.md` reaches only the closing step. Quote the globs, and commit the files: a source that is missing or not tracked by git is skipped, and Flow names it in its next message. A path-scoped source is read whole on every dispatch of the slice, so keep those files short and scope them narrowly. The full syntax of `when` is under [Configuration](#configuration).
+`naming.md` takes `applies: ["app/**"]`; `deploy.md` has a `description` only. A file reaches the agents of a slice whose paths match its `applies` globs, or whose `description` fits the slice, or always with `applies: always`. Quote the globs. Keep those files short: each chosen file is read whole on every dispatch. The rules: [`skills/dev/SKILL.md`](skills/dev/SKILL.md), § Guidelines folder.
 
 ### Replacing a preset
 
@@ -228,12 +227,10 @@ territories:               # per kind, where it lives and its adapter
   decisions: {adapter: acme-wiki:territory, where: ENG/decisions, write: comment}
   product: {adapter: acme-wiki:territory, where: PROD/context, write: direct}
 presets: [astro=my-stacks:astro]   # stack=skill or design=skill pairs, replacing the shipped one
-sources: [{path: docs/guides/testing.md, when: ["spec/**"]}, {path: docs/notes/pricing.md, when: {step: plan}}]   # files that must reach the agents, and when
 ```
 
 `changelog` also takes a map: `changelog: {path: docs/CHANGELOG.md, labels: {work: Job, decision: Why}, language: it, decisions: inline}`. `path` is the file (a plain string means the same), `labels` rename the `Work` and `Decision` lines of an entry, `language` sets the prose of the entry (otherwise it follows the existing changelog), and `decisions: inline` puts the decision links on one line joined by ` · ` instead of one line each (`lines`, the default). A missing key keeps today's format.
 
-`sources` lists the documents Flow's agents must read, wherever they live in the repo. `path` is repo-relative and must be a tracked file, or `{territory: <kind>, name: <name>}` takes its place to bring a document from a declared territory (its `when` holds globs only); `when` is one value, either a quoted glob (`"spec/**"`, quoted because a flow-style value starting with `*` is a YAML alias) or `{step: <name>}` / `{phase: <name>}`, otherwise a list of them. A path-scoped source goes in the slice packet when the paths the slice's section names (and, after the plan, the planner's `Files:`) match its glob; a step- or phase-scoped source goes in the instruction after the packet, for the dispatches of that step only. A path-scoped source is a whole file and weighs on every dispatch of the slice, so keep those short and scope them narrowly. Without `sources`, nothing changes.
 
 `territories` says where a kind of document lives when it isn't in the repo: `decisions`, `changelog`, `guidelines`, `lenses`, `product` or `archive`, each with an `adapter` (`<plugin>:<skill>`), a `where` and a `write` mode. A kind you don't declare stays under the root, as today. When `territories: changelog` is declared it takes the place of the `changelog` path; `labels`, `language` and `decisions` still apply. Adapters come from another plugin, not from Flow, and an adapter skill must not set `context: fork` nor `disable-model-invocation: true` in its frontmatter. Tokens and per-user values belong in the adapter plugin's own user configuration, never in `.flow.yml` or a repo file. `where` values and returned links are identifiers or login-only links, never public share links. Flow doesn't enforce it; it is the user's responsibility. The contract is in [`shared/territories.md`](shared/territories.md).
 
@@ -258,7 +255,7 @@ Older versions were installed as skills named `devflow`, `devflow-docs`, `devflo
 1. **Install the plugin first** (see [Install](#install)). Until the old skills are removed, both load: `/devflow` and `/flow:dev` are two copies of the conductor.
 2. **Remove the old skills.** Symlinks: `rm ~/.claude/skills/{devflow,devflow-docs,devflow-archive,projectflow}` (`rm -r` if they are copied folders). For `npx` installs: `npx skills remove -g devflow devflow-docs devflow-archive projectflow`.
 3. **New names:** `/devflow` is `/flow:dev`, `/projectflow` is `/flow:project`, `/devflow-docs` is `/flow:changelog`, `/devflow-archive` is `/flow:archive`.
-4. **Run `/flow:dev`** in the project. It finds the old traces on the default branch and offers the upgrade step: `.devflow.yml` renamed to `.flow.yml`, `stack:` turned into `stacks:`, the old names in `docs/work/archived.md` and in the guidelines rewritten, all in one commit on a `flow-upgrade` branch that it proposes to merge. It also lists, without editing them, the lines of your `CLAUDE.md` files, `Skill(...)` entries in `.claude/settings.json` and project-scope skill copies that still carry the old names. The upgrade is a run of its own: nothing else happens until the next run. Open `work/*` branches that still hold an old file are pointed at, with the merge command to run after the upgrade (`git switch work/<slug> && git merge <default>`); the merge into the default branch waits for its own ok; declining stops the run, and the upgrade is offered again next time. Resuming a work whose branch still holds an old file stops until the branch is refreshed.
+4. **Run `/flow:dev`** in the project. It finds the old traces on the default branch and offers the upgrade step: `.devflow.yml` renamed to `.flow.yml`, `stack:` turned into `stacks:`, the old names in `docs/work/archived.md` and in the guidelines rewritten, all in one commit on a `flow-upgrade` branch that it proposes to merge. A `sources:` key in `.flow.yml` is converted: a `{territory, name}` entry is dropped and named, whatever its `when` holds; a `path` entry with at least one glob becomes a file of `<root>/guidelines/`, moved there with `git mv` and given a frontmatter of `applies` (its globs, merged across entries sharing a path) and a `description` drafted from its first heading, for the user to rewrite; when the destination `<root>/guidelines/<basename>` is already taken, the file gets its frontmatter where it is and is named, not moved; a `path` entry with only `{step}` or `{phase}` values and a missing path are dropped and named, and their files stay where they are; the key is removed. References to a moved file, its relative links that break and the guidelines file's sections beyond its four are pointed at, not edited. It also lists, without editing them, the lines of your `CLAUDE.md` files, `Skill(...)` entries in `.claude/settings.json` and project-scope skill copies that still carry the old names. The upgrade is a run of its own: nothing else happens until the next run. Open `work/*` branches that still hold an old file are pointed at, with the merge command to run after the upgrade (`git switch work/<slug> && git merge <default>`); the merge into the default branch waits for its own ok; declining stops the run, and the upgrade is offered again next time. Resuming a work whose branch still holds an old file stops until the branch is refreshed.
 
 Until the upgrade runs, the old configuration file is not read.
 
