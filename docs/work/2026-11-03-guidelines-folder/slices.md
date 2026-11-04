@@ -49,6 +49,10 @@ Shared gotchas:
 
 **Gotchas.** The resume table's `plan` row today says "the sources matched by the slice's paths": V1 adds the folder next to it, V2 removes the sources part. The first stop today says `sources in packet: none` when none: V1 adds the guidelines line alongside; V2 drops the sources one. Keep both in V1 so the skill is consistent at every commit.
 
+**Deviations found while planning V1**
+
+- `skills/dev/SKILL.md:59` (inside § Sources) is edited too, though the slice's list doesn't name it: its "after the guideline sections" would fail the Done's `rg 'guideline sections'` check, and the packet order changes at that line.
+
 ---
 
 ## V2 — `sources:` goes away, with its upgrade
