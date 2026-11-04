@@ -130,6 +130,14 @@ Commits: c41c09a, 4926e57, ba2c51b, a469d51, b759e38, 711a36b, ecdf111, a2ea75e,
 
 **Gotchas.** The `list` and the `read`s of the chosen documents can't be one invocation (the names come from the list), hence the exception above; write it in all three places the rule is stated. The decision of 2026-11-03 ("stops on an old adapter") holds only if an old adapter answers `unmet`, not `none`: the `unmet: op list on guidelines` line is what makes the decision enforceable.
 
+**Deviations found while planning V3**
+
+- The one-invocation exception is written out whole only in § Reads; § Resolution and § Writes point to it with the same clause (lesson V1: one place per rule).
+- SKILL.md also changes in four places the slice's list leaves out but "every place that reads guidelines" covers: the resume `plan` and `review` rows, the design phase args, and Profile › Reading.
+- The contract's § The repo gains one clause naming what `list` on `guidelines` means in the repo.
+- The skip rule also covers an invalid `applies` and the name `document`, as SKILL.md's repo rule does.
+- After the plan, the re-match on a territory takes the latest `guidelines` `list` result of this session and reuses named reads already in scratch (plan review: a fresh `list` would never fire, since every resume runs one).
+
 ---
 
 ## V4 — This repo adopts the folder; the docs show it
