@@ -24,3 +24,9 @@ One rule per line, read by every later subagent.
 - When a fix changes what a value means in the contract (`applies: null`), grep the conductor for the paragraph that maps the same values before the fix passes: SKILL.md:52 restated it and needed its own round.
 - An executor that skips a Verified item (the "agrees with § X" read) reports DONE_WITH_CONCERNS, never DONE; say so in the instruction's last line.
 - A read-only task with no commit (a read-through, a gate run) says in the plan that it gets no task review, so the runner needs no ruling.
+
+## From V4
+
+- When the runner finds an executor "judged" a Verified item rather than seeing its output, it runs the item itself before the review and logs the report as DONE_WITH_CONCERNS; the V3 rule alone did not stop it.
+- When a slice rewrites a README section around a rule, every sentence left in that section that restates the rule is checked against the conductor's paragraph, old sentences included: README:127 predated V4 and contradicted SKILL.md:56.
+- A changed mermaid block is rendered with `npx -y @mermaid-js/mermaid-cli` into the scratchpad before the close; reading by eye is not a parse check.
