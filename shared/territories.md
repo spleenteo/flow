@@ -20,7 +20,7 @@ The kinds, and where an undeclared kind lives (the repo, under `<root>/`, as wit
 |---|---|
 | `decisions` | `<root>/decisions-log/` |
 | `changelog` | the `changelog` path |
-| `guidelines` | `<root>/development-guidelines.md` |
+| `guidelines` | `<root>/development-guidelines.md` and the files of `<root>/guidelines/` |
 | `lenses` | `<root>/impact-lenses.md` |
 | `product` | nothing: no product document is read |
 | `archive` | `<root>/work/archive/`, with `archived.md` |
@@ -44,8 +44,8 @@ Without `territories:`, nothing is read, resolved or shown, and every kind stays
 The conductor resolves territories once, when it opens or resumes a work: after the upgrade check, before it reads the profile (the profile may read a `guidelines` territory).
 
 - It reads `.flow.yml` and takes the adapter name of each entry, then invokes the adapter with the Skill tool, by that name, never by path.
-- **One invocation per adapter per step.** The args hold the step's request lines for every territory that adapter serves: one request per line, separated by newlines, and the adapter answers in the same order. Territories served by different adapters get one invocation each.
-- **Stops.** The run stops with one message that names the territory, and no work is opened or resumed, on: a malformed entry (unknown kind, or no `adapter` or `where`); an adapter the session doesn't list (exact name); an unmet `Requires`; any operation that returns `unreachable`. It never falls back to the repo. The exception is an `op: write` inside a step, which follows § Writes › Returns.
+- **One invocation per adapter per step.** The args hold the step's request lines for every territory that adapter serves: one request per line, separated by newlines, and the adapter answers in the same order. Territories served by different adapters get one invocation each. Its exceptions are listed in § Reads › One invocation per adapter per step.
+- **Stops.** The run stops with one message that names the territory, and no work is opened or resumed, on: a malformed entry (unknown kind, or no `adapter` or `where`); an adapter the session doesn't list (exact name); an unmet `Requires`; an `op: list` on `guidelines` answered `unmet: op list on guidelines`, at resolution or at any later step, whose message names the adapter and says the contract now asks it for `op: list` and `op: read` with `name` on `guidelines` ([decision](../docs/decisions-log/2026-11-03-guidelines-territory-stops-on-an-old-adapter.md)); any operation that returns `unreachable`. It never falls back to the repo. The exception is an `op: write` inside a step, which follows § Writes › Returns.
 
 **Request line.** Several per territory are allowed, one per line of the args. Fields are separated by `; `, list values by `, ` (not by bare commas, since keywords may hold commas):
 
@@ -67,25 +67,25 @@ Every request carries `op`, `kind` and `where`; `write` is carried when declared
 
 What the conductor fetches through an adapter for a declared kind, and how it hands the result on. An undeclared kind reads as without `territories:`.
 
-**By moment.** Each row is one request line per kind.
+**By moment.** Each row names a kind's requests at that moment; how many invocations they take is in § Reads › One invocation per adapter per step.
 
 | Moment | Kind | Request |
 |---|---|---|
-| Opening or resume, before the profile | `guidelines` | `op: read` |
+| Opening or resume, before the profile | `guidelines` | `op: read` with no `name` (the guidelines file) and `op: list`; then `op: read` with `name` for each `applies: always` document |
 | Opening, Step 1's memory search | `decisions`, `changelog`, `archive` | `op: search`, with the request's keywords |
 | Opening, Step 1's slug check | `archive` | `op: list`, matched on `work` anchored (§ Operations) |
 | `/flow:archive` step 2 | `changelog`, `decisions` | `changelog`: `op: read`; `decisions`: `op: list` |
 | Resume (standing documents) | `decisions` | descriptions, keywords from `STATUS.md`'s `description:` |
 | Impact; slice packet; resume at `step: plan` | `decisions` | descriptions with the slice's files |
 | Impact; slice packet; resume at `step: plan` | `lenses` | `op: read` |
-| Impact; slice packet; resume at `step: plan` | a matched source naming a territory | `op: read` with `name` |
+| Impact; slice packet; resume at `step: plan` | `guidelines` | `op: list`; then `op: read` with `name` for each document chosen (§ Reads › Guidelines on a territory) |
 | After the plan, before the review dispatch | `decisions` | descriptions again, with the planner's `Files:` |
-| After the plan, before the review dispatch | a newly matched source naming a territory | `op: read` with `name` |
+| After the plan, before the review dispatch | `guidelines` | `op: read` with `name` for each document whose `applies` now matches, on the slice's `list` result (the latest `guidelines` `list` result of this session; a document already read with `name` this session is reused from its scratch copy) |
 | Opening of `framing-doc` and `shaping`; the conductor writing `frame.md` itself | `product` | `op: read` |
 | Close, changelog step | `changelog` | `op: read` |
 | Close, changelog step | `decisions` | `op: list`, for the ids (§ Writes › Changelog) |
 
-**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. The conductor copies each `read` and `results:` file it keeps into the scratch folder (each `read` as `<kind>/<name>.md`, `<kind>/document.md` for a single document); reuse and `excerpts:` point only there. A result already in the scratch folder this session is reused (the `list` result within a slice; the `product` copy for every block of the session; a resume in a fresh session has none, so it reads the guidelines again).
+**One invocation per adapter per step.** Every declared kind the adapter serves gets a line in the same invocation: its read or, when the step has no read for that kind, `op: none`. The exception is a `guidelines` `list`: the `read`s with `name` it decides go in one more invocation of that adapter, right after, with `op: none` for its other declared kinds, and none is made when it decides no read. The other exception is § Writes › Status change (`read`, then `write`). The conductor copies each `read` and `results:` file it keeps into the scratch folder (each `read` as `<kind>/<name>.md`, a `/` in the name kept as folders, `<kind>/document.md` for a read with no `name`); reuse and `excerpts:` point only there. A result already in the scratch folder this session is reused (the `list` result within a slice; the `product` copy for every block of the session; a resume in a fresh session has none, so it reads the guidelines again).
 
 **Descriptions** are an `op: search` (keywords) plus an `op: list` (no filter) in one invocation. The conductor does the `touches` match on the `list` results file with `rg` or `awk`, by `flow:docs` § Op `search` › `files`'s rule; a block of ten lines or fewer is matched as returned. It reads only the matched lines. It keeps the search hits and the matches, one line each:
 
@@ -97,19 +97,11 @@ What the conductor fetches through an adapter for a declared kind, and how it ha
 
 **Scratch folder.** One `mktemp -d` per session, made at the first territory read or write and reused (the `/flow:design` § Check pattern). It is outside the repo and never committed.
 
-**Guidelines on a territory.** `## Tests` and `## Gate` come from its `read`: no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind. A `read` that returns `missing` means there are no guidelines yet: the profile asks the level, and the `## Tests` write sends a new file holding only `## Tests` (§ Writes). A `lenses` `read` that returns `missing` reads as an absent `impact-lenses.md`: project lenses: none.
-
-**Sources naming a territory.** A `sources:` entry may carry `{territory: <kind>, name: <name>, when: …}` in place of `path`:
-
-```yaml
-sources: [{territory: product, name: voice, when: ["app/**"]}]
-```
-
-An undeclared kind is skipped and named. There is no `git ls-files` check. Its `when` holds globs only: a `{step: …}` or `{phase: …}` value is skipped and named, since no row above reads a territory source for a step or a phase. The packet heading is `### <kind>:<name>`, with the text of its copy verbatim.
+**Guidelines on a territory.** `## Tests` and `## Gate` come from the guidelines file's `read` (no `name`): no branch lookup, no local file. A missing `## Tests` is asked, and the asked level is written through the adapter (§ Writes); while `proposed`, it holds for this session only. The gate at close comes from the packet. Neither the draft nor Step 0 offers a guidelines or lenses file for a declared kind. A `read` with no `name` that returns `missing` means there is no guidelines file yet: the profile asks the level, and the `## Tests` write sends a new file holding only `## Tests` (§ Writes). A `lenses` `read` that returns `missing` reads as an absent `impact-lenses.md`: project lenses: none. `where` is what the project declared; how the guidelines file and the folder's documents sit there is the adapter's choice. Selection and skips are `/flow:dev`'s (`skills/dev/SKILL.md`, § Guidelines folder), applied to the `list` lines in place of the frontmatter (`description: null`, an `applies` that is neither globs, `always` nor `null`, and the name `document` count as skips; `applies: null` reads as no `applies`). On `none`, no document of the folder is read or put in the packet, and the step goes on. Each chosen document goes under the packet's `## Guidelines` as `### guidelines:<name>`, sorted by name, with its scratch copy's text verbatim; the first stop names it `guidelines:<name>`.
 
 **Product.** When `product` is declared, the conductor reads it through one adapter invocation, `op: read; kind: product` with `op: none` lines for the other declared kinds that adapter serves. It copies the result to the scratch folder and never reads the territory's files directly. For `framing-doc` and `shaping` only, it builds a block named `` `## Product context` `` just before the invocation, from the copy's text verbatim, inside the prompt the tool receives, right below the criterion and above the path instruction. On the definition path the frame phase opens with `flow:brainstorm`, which gets no block; a conductor writing `frame.md` itself reads the product context and never copies it in. The block's first line, right under its heading, word for word: ``Context only: cite it as `product:<name>`, never copy its text into the document you write.`` (`<name>` is the read's name, `document` when none). Undeclared or `missing`: nothing.
 
-**Packet place.** When `territories:` declares `decisions`, `guidelines` or `lenses`, or a matched source names a territory, `V<n>-packet.md` goes in the scratch folder, else in `<work dir>/` as without territories. The ledger's head gets a third line, `Packet: <path>`. Close adds the packet to the work's commit only from the work dir. A resume at execute whose scratch packet is gone rebuilds it in this session's scratch folder, and a `Ruling:` line records the new path.
+**Packet place.** When `territories:` declares `decisions`, `guidelines` or `lenses`, `V<n>-packet.md` goes in the scratch folder, else in `<work dir>/` as without territories. The ledger's head gets a third line, `Packet: <path>`. Close adds the packet to the work's commit only from the work dir. A resume at execute whose scratch packet is gone rebuilds it in this session's scratch folder, and a `Ruling:` line records the new path.
 
 ## Writes
 
@@ -120,10 +112,10 @@ What the conductor sends through an adapter for a declared kind, and what comes 
 | Decision recorded (a conductor, `/flow:grill`) | `decisions` | `op: write` with `name: new` |
 | Status changed | `decisions` | `op: read` with `name`, then `op: write` with that `name` |
 | Close, changelog step | `changelog` | `op: write` with no `name`, when `changelog` is declared |
-| Profile writes the `## Tests` lines | `guidelines` | `op: write` with no `name` |
+| Profile writes the `## Tests` lines | `guidelines` | `op: write` with no `name` (the guidelines file) |
 | Archive (`/flow:archive`) | `archive` | `op: archive` with `folder` |
 
-Every request line carries `op`, `kind` and `where` (§ Resolution); each `op: write` adds `file: <absolute path>` and `op: archive` adds `folder:`; both add `write` when declared. One invocation per adapter per step still holds: the other kinds that adapter serves get `op: none`.
+Every request line carries `op`, `kind` and `where` (§ Resolution); each `op: write` adds `file: <absolute path>` and `op: archive` adds `folder:`; both add `write` when declared. One invocation per adapter per step still holds (its exceptions are listed in § Reads › One invocation per adapter per step): the other kinds that adapter serves get `op: none`.
 
 **Scratch folders.** Every writer makes the session scratch folder at its first step that touches a declared territory, if this session has none: the conductor, `/flow:grill`, `/flow:archive` and a manual `/flow:changelog`. Each write gets a fresh, empty folder, `mktemp -d "<session scratch folder>/w.XXXXXX"`, so `decisions-check` sees one file. The request to `flow:docs` carries it as `scratch: <that folder>`.
 
@@ -133,7 +125,7 @@ Every request line carries `op`, `kind` and `where` (§ Resolution); each `op: w
 
 **Changelog.** At the close, whenever `decisions` is declared, the invocation also sends `op: list; kind: decisions; where: <where>` (in the same invocation when `decisions` is on the same adapter, else in its own), so the **Decision** line is kept even when only `decisions` is a territory. `op: write; kind: changelog` is sent only when `changelog` is declared. The conductor runs the anchored match (§ Operations) on the block, which gives `decision-ids: decisions:<id>, …`. `changelog-write`, with `scratch:`, inserts the entry into a copy of `excerpts` (or under a new two-line intro) at `<scratch>/CHANGELOG.md`, writes the version file and commits nothing. It returns `Recorded v<version> — <title> — not committed; changelog: <absolute path>; missing decisions: …; manual after merge: …`. Then `op: write; kind: changelog; where: <where>[; write: <word>]; file: <path>`, with no `name`. On `written` or `proposed`, the conductor commits the version file alone (`Bump the version to vX.Y.Z`); on `unmet`, `unreachable` or `FAILED:`, it restores the version file when git tracks it, else removes it, and records nothing (the work reference, § Closing a work step 2). A territory decision is named `` `decisions:<id>` ``, never linked, since a `file://` link in a repo changelog fails the Gate. With `decision-ids`, the **Decision** bullet stays even without `decisions-log/`. On a changelog territory, a repo decision is named `` `<root>/decisions-log/<file>` ``.
 
-**`## Tests` on a territory.** At `/flow:dev`'s § Profile › Writing (`skills/dev/SKILL.md`), the two lines go into the conductor's copy of the guidelines `read`: at the start of `## Tests`, or in a new section. On `missing`, they go into a new file `<session scratch folder>/guidelines/document.md` holding only `## Tests` with the two lines. Then `op: write; kind: guidelines; where: <where>[; write: <word>]; file: <copy>`, with no `name`. While `proposed`, and on `unmet`, `unreachable` or `FAILED:`, the level holds for this session only.
+**`## Tests` on a territory.** At `/flow:dev`'s § Profile › Writing (`skills/dev/SKILL.md`), the two lines go into the conductor's copy of the guidelines file's `read` (`<session scratch folder>/guidelines/document.md`): at the start of `## Tests`, or in a new section. On `missing`, they go into a new file `<session scratch folder>/guidelines/document.md` holding only `## Tests` with the two lines. Then `op: write; kind: guidelines; where: <where>[; write: <word>]; file: <copy>`, with no `name`. The write targets the guidelines file, never a document of the folder. While `proposed`, and on `unmet`, `unreachable` or `FAILED:`, the level holds for this session only.
 
 **Archive.** With `archive` declared, `/flow:archive` sends `op: archive; kind: archive; where: <where>[; write: <word>]; folder: <absolute path of <root>/work/<dir>>`, with `op: none` lines for the adapter's other declared kinds. The adapter keeps the folder as one container named `<dir>`, one document per file, each file as it is (frontmatter included, no fields table); subfolders become nested containers. It returns `archived <name>` (`<name>` is the container's identifier), `proposed <link>` or `FAILED: <reason>`; on `unmet`, `unreachable` or `FAILED:` the archive stops, removing nothing. Re-running on an already archived `<dir>`, with a word that writes in place or when the container already matches the folder (same files, same contents), replaces the territory copy with the folder as it is now and returns `archived <name>`, and with a proposing word when they differ, opens a proposal and leaves the container as it is; re-running on an open proposal replaces the proposal's content and returns the same `proposed <link>`, never a second one. On `proposed`, nothing is removed or rewritten, and `- YYYY-MM-DD — archive:<dir> — <link>` goes under the work's `## Pending proposals` as below; the commit message is `Note a pending proposal on archive`. Whenever `territories:` is declared (any kind), `/flow:archive` reads this contract and makes the session scratch folder first; its step 2 sends one invocation per adapter (§ Reads), with `op: none` for every other declared kind, `archive` included, so `Requires` is checked before anything is touched, and it stops as § Resolution says, with nothing archived. The git steps (the clean check, the censuses, the removal, the text that replaces inbound links) are the work reference's § Archive, repo, on a territory (`shared/work.md`).
 
@@ -156,7 +148,7 @@ What the adapter needs to work: a connector or tool it must be able to call, a c
 
 ### Fields
 
-A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `status`, `description`, `touches`, `work`, `area`, `superseded_by` and `resolved_by`.
+A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `status`, `description`, `touches`, `work`, `area`, `applies`, `superseded_by` and `resolved_by`.
 
 - If the service has native fields, map them to these names.
 - Otherwise, keep a key/value table at the top of the document, with list values comma-separated and `null` written out:
@@ -170,11 +162,12 @@ A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `st
 | superseded_by | null |
 ```
 
-`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out. It writes `<name>.md` into a `mktemp -d` folder of its own (`document.md` for a single document), the frontmatter followed by one blank line. A `write` file with no frontmatter (the changelog, guidelines) is stored as it is, with no fields table. A ` | ` inside a table value is written `\|` and read back as ` | `.
+`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out. It writes `<name>.md` into a `mktemp -d` folder of its own (`document.md` for a read with no `name`; a `name` holding `/` keeps it as folders, `rails/testing.md`), the frontmatter followed by one blank line. A `write` file with no frontmatter (the changelog, the guidelines file) is stored as it is, with no fields table. A ` | ` inside a table value is written `\|` and read back as ` | `.
 
 The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) must round-trip through `read` and `write` unchanged.
 
 - On kind `archive`, the container's fields are those of its `STATUS.md` frontmatter (`status`, `work`, `description`, …), read from the archived copy; the files inside keep their own frontmatter untouched.
+- On kind `guidelines`, a document of the folder has two fields, `description` (one line) and `applies` (a list of globs, or the word `always`); `read` gives them as the repo writes them, `applies: ["spec/**", "test/**"]` with the globs quoted (a flow value starting with `*` is a YAML alias) or `applies: always`, and a fields table writes `applies | spec/**, test/**`. A document with no `applies` has none in its `read`. The guidelines file (`<root>/development-guidelines.md` in the repo) has no fields.
 
 ### Operations
 
@@ -183,18 +176,19 @@ Every operation runs `Requires` first and may return `unmet: <what>`, or `unreac
 | Operation | Input | Returns |
 |---|---|---|
 | `op: none` | none | `ready` or `unmet: <what>` |
-| `op: read` | `name` (optional; absent, the document at `where`, for the single-document kinds `guidelines`, `lenses`, `product`, `changelog`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
-| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where`, or creates it when `read` returns `missing`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>`, or `FAILED: <id> exists` |
+| `op: read` | `name` (optional; absent, the single document at `where` for `lenses`, `product` and `changelog`, and the guidelines file for `guidelines`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
+| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where` (the guidelines file for `guidelines`), or creates it when `read` returns `missing`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>`, or `FAILED: <id> exists` |
 | `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
-| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`, or `none` |
+| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`; on `guidelines`, `<name> — applies: <globs \| always \| null>; description: <d>`; or `none` |
 | `op: archive` | `folder: <absolute path of the work's folder>`; the container is named `<dir>`, the folder's name | `archived <name>` (`<name>`: the container's identifier; with a word that writes in place, or when the container already matches the folder (same files, same contents), a re-run replaces the copy and returns it again), `proposed <link>`, or `FAILED: <reason>` with nothing kept on the territory |
 
 - A request is checked in order: the `write` word, then the identifier. An unknown `write` word returns `unmet: write <word>`; it is checked with `Requires`, so a wrong word in `.flow.yml` already returns it at resolution, `op: none` included. `write` creates documents inside an existing `where`; a missing `where` is `unmet`.
 - `name: new`: the new document's identifier is the composed file's name without `.md`, returned as `written <id>`; an existing document with that identifier returns `FAILED: <id> exists`, and with `comment`, so does an open proposal with it.
-- `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it. On kind `archive`, `list` lines carry `status`, `work` and `description` only, `description` last.
+- `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it. On kind `archive`, `list` lines carry `status`, `work` and `description` only, `description` last. On kind `guidelines`, `applies` and `description` only, `description` last.
 - A proposal stays out of `list` and `search` until accepted, archive proposals included.
 - `op: archive` rules: `<dir>` is the last path component of `folder` (no trailing slash is sent). It needs an existing `where` (else `unmet`) and takes the adapter's `write` words as `write` does. On any other kind it returns `unmet: op archive on <kind>`. The container holds exactly the folder's files, every file kept, dotfiles included (the conductor guarantees the folder is clean, § Archive, repo, on a territory, so the adapter filters nothing); a re-run removes from the container the files removed from the folder since. When the container already holds exactly the folder's files, with the same contents, `op: archive` returns `archived <name>` whatever the word (the case after a proposal is accepted); a proposing word opens a proposal only when they differ, and until it is accepted the container stays as it is, an open proposal being replaced by the next run and returning the same `proposed <link>`; where the proposal lives is the adapter's choice, and the link points at it. The conductor stops on `unmet`, `unreachable` or `FAILED:`, removing nothing.
 - On kind `archive`, `list` and `search` give one line per container. `list`: `<dir> — status: <s>; work: <w>; description: <d>`, the values from its `STATUS.md` frontmatter; a container with no `STATUS.md` is left out of `list` and still searched. `search`: `<dir> — <excerpt>`, the excerpt from any file of the container; the conductor passes each hit on as `archive:<dir> — <excerpt>`. No Flow step sends `read` on kind `archive`.
+- On kind `guidelines`, `list` gives one line per document of the folder at `where`, in the format of the `op: list` row, globs unquoted; the guidelines file is not listed, and `none` means a folder with no documents. A document with no description is listed with `description: null`. `<name>` is the document's identifier, a `/` standing for a sub-folder (`rails/testing`); `document` is never a name, being the guidelines file's. `op: read; name: <name>` returns that document; `op: read` with no `name` returns the guidelines file; a `read` with `name` that returns `missing` is skipped and named in the next message. An adapter that can't list a `guidelines` folder answers `op: list` with `unmet: op list on guidelines`, never `none`: Flow stops on it (§ Resolution).
 - `proposed <link>`: the link is absolute (a URL, or `file://` with an absolute path) and points at the proposal. Until it is accepted, `read` and `list` return the document as it was (a new one is absent). A `read` of a name that exists only as a proposal returns `missing`.
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
@@ -210,7 +204,7 @@ The reference behaviour: what an undeclared kind does, and what every adapter st
 - **Fields**: YAML frontmatter.
 - **`read`**: the file itself.
 - **`write`**: writes the file and returns `written`. The caller commits, as today.
-- **`search` and `list`**: `flow:docs` `op: search` and `op: descriptions`.
+- **`search` and `list`**: `flow:docs` `op: search` and `op: descriptions`; on `guidelines`, `/flow:dev`'s listing and frontmatter read of `<root>/guidelines/` (`skills/dev/SKILL.md`, § Guidelines folder).
 - **`archive`**: the move `/flow:archive` makes.
 
 ## Tokens, per-user values and links

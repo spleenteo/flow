@@ -2,16 +2,18 @@
 
 Rules the plans and the code must follow. `/flow:dev` passes this file to every plan, review and execution. Keep it short and checkable: a rule nobody can verify isn't a rule.
 
+<!-- Prose about naming, placement and how tests are written goes in files of the `guidelines/` folder next to this file, each opening with a frontmatter of `description` and, optionally, `applies` (globs, or `always`). This file keeps its four sections. -->
+
 ## References
 
-<!-- External guides and skills this project follows (style guides, framework skills, internal handbooks). One line each, with where to find it. A document Flow's agents must read goes in `sources:` of `.flow.yml`, with when it applies. -->
+<!-- External guides and skills this project follows (style guides, framework skills, internal handbooks). One line each, with where to find it. A document of your own that Flow's agents must read goes in the `guidelines/` folder next to this file, with a `description` saying when it matters. -->
 
 ## Tests
 
 Level: <none | essential | full>
 Sensitive areas: <path or concept>, …
 
-<!-- Framework and command. Where tests live and how they're named. What a good test looks like: one behaviour per test, arrange/act/assert, no sleep, no snapshot as the only assertion. -->
+<!-- Framework and command only. How tests are written goes in a `guidelines/` file. -->
 
 ## Gate
 

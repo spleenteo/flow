@@ -86,7 +86,7 @@ Running `/flow:dev`, `/flow:project`, `/flow:brainstorm`, `/flow:grill` or `/flo
 - **Slice loop.** Per slice: Flow's planner writes the plan, a plan reviewer checks it, **first stop**; then the conductor hands the slice to `flow:slice-runner`, which runs in the background: it dispatches the executors, has a task reviewer check each task. The runner verifies the Done and the gate and drafts the narrative and lessons; the conductor runs the items left pending with the user, copies the draft and commits, **second stop**: "V3 closed. Plan V4, or stop here?"
 - **Tiers.** Planner, plan reviewer, impact and `flow:slice-runner` run on the top tier; executors and task reviews on the mid tier. A `critical` task's review, the final review and a third fix round go to the top tier. Plans mark which tasks depend on which and which are `critical`; independent tasks run in parallel.
 - **The ledger.** During execution `docs/work/<dir>/V<n>-ledger.md` is written by `flow:slice-runner`, two writes per task (when the executor first returns commits, when the task passes), and records every dispatch (task, agent, model, outcome, commits) and which tasks are complete. A resumed work doesn't dispatch a complete task again. A phase or a slice closes with `STATUS.md`, its documents and the commit in one call.
-- **Resume.** It reloads the standing documents (`STATUS.md`, the frame's criterion, the guidelines that apply, `lessons.md`, the matching decisions), then what each phase and step needs: the plan's header at review, the ledger at execute or close, `shaping.md` and `docs/design/README.md` at the design phase. It says what it reloaded, and continues.
+- **Resume.** It reloads the standing documents (`STATUS.md`, the frame's criterion, `docs/development-guidelines.md` and the `applies: always` files of `docs/guidelines/`, `lessons.md`, the matching decisions), then what each phase and step needs: the plan's header at review, the ledger at execute or close, `shaping.md` and `docs/design/README.md` at the design phase. It says what it reloaded, and continues.
 - **Close and merge.** After the last slice it asks before each step: close the work, the changelog and version (`/flow:changelog`), `/flow:archive`, then the merge. With `merge: local`, the default, it proposes the local merge into the target branch and runs it after your ok; with `merge: pr` it proposes a pull request and merges nothing. Push and tag each wait for their own ok. Code, changelog, version and archived work land together.
 
 The decisions are the memory of why: when a choice discards a real alternative, `/flow:dev` proposes recording it and writes it only after your yes.
@@ -105,6 +105,55 @@ The mapped skill replaces the shipped one entirely. If it isn't available in the
 
 The same chain maps the design tool's adapter: `design=<skill>` is a pair like the others, but names a tool, not a stack. `design: pen` in `.flow.yml` selects the shipped adapter, `flow:design-pen`; a `design=` pair replaces it entirely.
 
+## Customizing a stack
+
+You don't need to know how Flow works inside to bend it to your project. Two things to know first, then an example and the options.
+
+**Where the stack's guidelines live.** In the plugin, not in your repo. Each shipped stack is one skill, [`skills/stack-rails/SKILL.md`](skills/stack-rails/SKILL.md) for example, with five sections: `## Rules` (what the code must follow), `## Lenses` (what a change can break), `## Tests` (level and sensitive areas), `## Gate` (commands to run before a slice closes) and `## References`. Flow reads the skill when it needs it and hands its Rules to the agents that plan, write and review. Nothing is copied into your repo, except that on the first run Flow offers a draft of `docs/development-guidelines.md` built from the preset's Tests, Gate and References. A preset is one `SKILL.md` per stack; your topics go in your own files.
+
+**Where your own guidelines live.** In your repo, in `docs/guidelines/`: one Markdown file per concern, any names, sub-folders free. Each opens with two frontmatter lines, `description` (required, one line: what the file is for, which Flow reads to choose it when there is no `applies`) and `applies` (optional: quoted globs, or `always`). There is no list to keep anywhere else. `docs/development-guidelines.md` keeps four sections (`## Tests`, `## Gate`, `## References`, `## Deviations`) and travels whole in every packet. Your files add to the preset; they don't edit it.
+
+### Several files for one stack
+
+Say you want three Rails documents. Put them in `docs/guidelines/`, each opening with a frontmatter block. For `docs/guidelines/rails/testing.md`:
+
+```yaml
+---
+description: How we write and run specs
+applies: ["spec/**", "test/**"]
+---
+```
+
+`rails/naming.md` takes `applies: ["app/**"]`; `rails/deploy.md` has a `description` only. A file with `applies` globs reaches the agents of the slices whose paths match them; one with a `description` only reaches the slices it fits; `applies: always` reaches every slice. Quote the globs. Keep those files short: each chosen file is read whole on every dispatch. The rules: [`skills/dev/SKILL.md`](skills/dev/SKILL.md), § Guidelines folder.
+
+### Which option for which need
+
+| You want to | Do this | Effect |
+|---|---|---|
+| Add rules of your own | A file in `docs/guidelines/` with a description and, optionally, applies | Reaches the slices it concerns, next to the preset's Rules; the first stop names it |
+| Say where you depart from the preset | Under `## Deviations` in `docs/development-guidelines.md`, with the reason | Travels whole in every packet |
+| Add things a change can break here (public URLs, an export other teams import) | List them in `docs/impact-lenses.md` | Applied at impact and in every plan review, on top of the preset's lenses |
+| Drop the shipped preset and use your own rules for a stack | Write your own preset skill and map it with `presets:` in `.flow.yml` | Replaces the shipped preset entirely |
+| Use the same replacement in all your projects | Same pair in the plugin option `stack_presets` | Applies wherever the project has no `presets:` of its own |
+
+### Replacing a preset
+
+A preset is an ordinary skill. To replace `flow:stack-rails`, make a skill (in your own plugin, say `my-stacks:rails`) whose `SKILL.md` has the same five sections, then map it:
+
+```yaml
+# .flow.yml
+presets: [rails=my-stacks:rails]
+```
+
+Start from a copy of the shipped file. Mind the rules of the mapping:
+
+- It replaces; it never merges. Rules you want to keep must be in your copy.
+- If the mapped skill isn't installed in the session, Flow says so and does not fall back to the shipped preset.
+- The skill is invoked by its qualified name, so it must be installed as a plugin or a skill the session lists.
+- There is no switch to turn off a single shipped rule. To depart from one rule, write it under `## Deviations`; to drop several, replace the preset.
+
+Order of precedence, first hit wins: `presets:` in `.flow.yml`, then the `stack_presets` plugin option, then the shipped preset.
+
 ## What lands in a project
 
 Markdown only, versioned with the code, under `docs/` by default. A kind of document declared in `territories:` lives in its own tool instead; `work/` and `.version` always stay in the repo:
@@ -122,6 +171,9 @@ docs/
     checkout.pen
   decisions-log/
     2026-09-03-server-side-locale-detection.md
+  guidelines/
+    rails/
+      testing.md
   work/
     archived.md
     2026-09-02-mobile-menu/
@@ -153,7 +205,7 @@ Every slice plan is checked by a fresh agent, `flow:plan-reviewer`, with five le
 1. **Mandate fidelity**: the plan does only what the slice calls for and covers its Done.
 2. **Ignored lessons**: a rule in `lessons.md` the plan doesn't follow.
 3. **Existence**: the files and symbols the plan names exist and do what it assumes.
-4. **Guideline compliance**: tests, naming and placement follow `docs/development-guidelines.md`.
+4. **Guideline compliance**: tests, naming and placement follow `docs/development-guidelines.md` and the `docs/guidelines/` files in the packet.
 5. **Project lenses**: the lenses in `docs/impact-lenses.md`; "project lenses: none" when the file is absent.
 
 The guidelines template is [`skills/dev/development-guidelines.template.md`](skills/dev/development-guidelines.template.md); the decisions format is [`skills/docs/decisions.md`](skills/docs/decisions.md).
@@ -176,12 +228,10 @@ territories:               # per kind, where it lives and its adapter
   decisions: {adapter: acme-wiki:territory, where: ENG/decisions, write: comment}
   product: {adapter: acme-wiki:territory, where: PROD/context, write: direct}
 presets: [astro=my-stacks:astro]   # stack=skill or design=skill pairs, replacing the shipped one
-sources: [{path: docs/guides/testing.md, when: ["spec/**"]}, {path: docs/notes/pricing.md, when: {step: plan}}]   # files that must reach the agents, and when
 ```
 
 `changelog` also takes a map: `changelog: {path: docs/CHANGELOG.md, labels: {work: Job, decision: Why}, language: it, decisions: inline}`. `path` is the file (a plain string means the same), `labels` rename the `Work` and `Decision` lines of an entry, `language` sets the prose of the entry (otherwise it follows the existing changelog), and `decisions: inline` puts the decision links on one line joined by ` · ` instead of one line each (`lines`, the default). A missing key keeps today's format.
 
-`sources` lists the documents Flow's agents must read, wherever they live in the repo. `path` is repo-relative and must be a tracked file, or `{territory: <kind>, name: <name>}` takes its place to bring a document from a declared territory (its `when` holds globs only); `when` is one value, either a quoted glob (`"spec/**"`, quoted because a flow-style value starting with `*` is a YAML alias) or `{step: <name>}` / `{phase: <name>}`, otherwise a list of them. A path-scoped source goes in the slice packet when the paths the slice's section names (and, after the plan, the planner's `Files:`) match its glob; a step- or phase-scoped source goes in the instruction after the packet, for the dispatches of that step only. A path-scoped source is a whole file and weighs on every dispatch of the slice, so keep those short and scope them narrowly. Without `sources`, nothing changes.
 
 `territories` says where a kind of document lives when it isn't in the repo: `decisions`, `changelog`, `guidelines`, `lenses`, `product` or `archive`, each with an `adapter` (`<plugin>:<skill>`), a `where` and a `write` mode. A kind you don't declare stays under the root, as today. When `territories: changelog` is declared it takes the place of the `changelog` path; `labels`, `language` and `decisions` still apply. Adapters come from another plugin, not from Flow, and an adapter skill must not set `context: fork` nor `disable-model-invocation: true` in its frontmatter. Tokens and per-user values belong in the adapter plugin's own user configuration, never in `.flow.yml` or a repo file. `where` values and returned links are identifiers or login-only links, never public share links. Flow doesn't enforce it; it is the user's responsibility. The contract is in [`shared/territories.md`](shared/territories.md).
 
@@ -206,7 +256,7 @@ Older versions were installed as skills named `devflow`, `devflow-docs`, `devflo
 1. **Install the plugin first** (see [Install](#install)). Until the old skills are removed, both load: `/devflow` and `/flow:dev` are two copies of the conductor.
 2. **Remove the old skills.** Symlinks: `rm ~/.claude/skills/{devflow,devflow-docs,devflow-archive,projectflow}` (`rm -r` if they are copied folders). For `npx` installs: `npx skills remove -g devflow devflow-docs devflow-archive projectflow`.
 3. **New names:** `/devflow` is `/flow:dev`, `/projectflow` is `/flow:project`, `/devflow-docs` is `/flow:changelog`, `/devflow-archive` is `/flow:archive`.
-4. **Run `/flow:dev`** in the project. It finds the old traces on the default branch and offers the upgrade step: `.devflow.yml` renamed to `.flow.yml`, `stack:` turned into `stacks:`, the old names in `docs/work/archived.md` and in the guidelines rewritten, all in one commit on a `flow-upgrade` branch that it proposes to merge. It also lists, without editing them, the lines of your `CLAUDE.md` files, `Skill(...)` entries in `.claude/settings.json` and project-scope skill copies that still carry the old names. The upgrade is a run of its own: nothing else happens until the next run. Open `work/*` branches that still hold an old file are pointed at, with the merge command to run after the upgrade (`git switch work/<slug> && git merge <default>`); the merge into the default branch waits for its own ok; declining stops the run, and the upgrade is offered again next time. Resuming a work whose branch still holds an old file stops until the branch is refreshed.
+4. **Run `/flow:dev`** in the project. It finds the old traces on the default branch and offers the upgrade step: `.devflow.yml` renamed to `.flow.yml`, `stack:` turned into `stacks:`, the old names in `docs/work/archived.md` and in the guidelines rewritten, all in one commit on a `flow-upgrade` branch that it proposes to merge. A `sources:` key in `.flow.yml` is converted: a `{territory, name}` entry is dropped and named, whatever its `when` holds; a `path` entry with at least one glob becomes a file of `<root>/guidelines/`, moved there with `git mv` and given a frontmatter of `applies` (its globs, merged across entries sharing a path) and a `description` drafted from its first heading, for the user to rewrite; when the destination `<root>/guidelines/<basename>` is already taken or the merged frontmatter would close past line 10, the file gets its frontmatter where it is and is named, not moved; a `path` entry with only `{step}` or `{phase}` values and a missing path are dropped and named, and their files stay where they are; the key is removed. References to a moved file, its relative links that break and the guidelines file's sections beyond its four are pointed at, not edited. It also lists, without editing them, the lines of your `CLAUDE.md` files, `Skill(...)` entries in `.claude/settings.json` and project-scope skill copies that still carry the old names. The upgrade is a run of its own: nothing else happens until the next run. Open `work/*` branches that still hold an old file or a `sources:` key are pointed at, with the merge command to run after the upgrade (`git switch work/<slug> && git merge <default>`); the merge into the default branch waits for its own ok; declining stops the run, and the upgrade is offered again next time. Resuming a work whose branch still holds an old file or a `sources:` key stops until the branch is refreshed.
 
 Until the upgrade runs, the old configuration file is not read.
 
@@ -223,7 +273,7 @@ claude --plugin-dir ./flow
 
 `--plugin-dir` loads the clone for one session in place of the installed `flow` ([flags that load a plugin for one session](https://code.claude.com/docs/en/plugins/cli-reference#flags-that-load-a-plugin-for-one-session)).
 
-Read the [Releases](docs/development-guidelines.md#releases) rules before changing anything. A merge into `main` is a release, because projects declare the marketplace without a `ref`. Never add the marketplace from the clone you are editing: a local marketplace loads in place, so every session would run the conductor from the files you are editing. The guidelines, the Gate and the commit rules: [`docs/development-guidelines.md`](docs/development-guidelines.md).
+Read the [Releases](docs/guidelines/releases.md) rules before changing anything. A merge into `main` is a release, because projects declare the marketplace without a `ref`. Never add the marketplace from the clone you are editing: a local marketplace loads in place, so every session would run the conductor from the files you are editing. The tests and the Gate: [`docs/development-guidelines.md`](docs/development-guidelines.md); the commit rules: [`docs/guidelines/commits.md`](docs/guidelines/commits.md); the rest in `docs/guidelines/`.
 
 ## Update
 
