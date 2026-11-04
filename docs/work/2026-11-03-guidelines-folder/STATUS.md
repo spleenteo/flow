@@ -1,6 +1,6 @@
 ---
-status: open
-phase: slice
+status: closed
+phase: done
 slice: null
 step: null
 work: guidelines-folder
@@ -40,3 +40,4 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 - 11-04 — V3 close — 6 commits (2 fix rounds, same applies: null gap), gate green, final review done (lows only), 4 lessons, no decision — V4 plan next — ~19 min runner — —
 - 11-04 — V4 close — 6 commits (1 final-review fix round), gate green, final review done, pending --plugin-dir run passed headless, 3 lessons, no decision; from here the installed 0.5.0 conductor does not read docs/guidelines/, so the work close reads releases.md and commits.md by hand before the merge — work close next — ~9 min runner — —
 - 11-04 — V5 — added and closed on the owner's request: site text for the guidelines folder; plan, review and stops skipped as asked; gate green — work close next — ~5 min — —
+- 11-04 — close — work complete: 5 slices, all closed; changelog, archive and merge next — — —
