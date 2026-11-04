@@ -146,7 +146,7 @@ What the adapter needs to work: a connector or tool it must be able to call, a c
 
 ### Fields
 
-A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `status`, `description`, `touches`, `work`, `area`, `superseded_by` and `resolved_by`.
+A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `status`, `description`, `touches`, `work`, `area`, `applies`, `superseded_by` and `resolved_by`.
 
 - If the service has native fields, map them to these names.
 - Otherwise, keep a key/value table at the top of the document, with list values comma-separated and `null` written out:
@@ -160,11 +160,12 @@ A document's fields are the ones the repo keeps in YAML frontmatter: `kind`, `st
 | superseded_by | null |
 ```
 
-`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out. It writes `<name>.md` into a `mktemp -d` folder of its own (`document.md` for a single document), the frontmatter followed by one blank line. A `write` file with no frontmatter (the changelog, guidelines) is stored as it is, with no fields table. A ` | ` inside a table value is written `\|` and read back as ` | `.
+`read` returns the repo's frontmatter form: `description` quoted, lists as `[a, b]`, `null` written out. It writes `<name>.md` into a `mktemp -d` folder of its own (`document.md` for a read with no `name`; a `name` holding `/` keeps it as folders, `rails/testing.md`), the frontmatter followed by one blank line. A `write` file with no frontmatter (the changelog, the guidelines file) is stored as it is, with no fields table. A ` | ` inside a table value is written `\|` and read back as ` | `.
 
 The decision keys (`kind`, `status`, `description`, `touches`, `superseded_by`) must round-trip through `read` and `write` unchanged.
 
 - On kind `archive`, the container's fields are those of its `STATUS.md` frontmatter (`status`, `work`, `description`, …), read from the archived copy; the files inside keep their own frontmatter untouched.
+- On kind `guidelines`, a document of the folder has two fields, `description` (one line) and `applies` (a list of globs, or the word `always`); `read` gives them as the repo writes them, `applies: ["spec/**", "test/**"]` with the globs quoted (a flow value starting with `*` is a YAML alias) or `applies: always`, and a fields table writes `applies | spec/**, test/**`. A document with no `applies` has none in its `read`. The guidelines file (`<root>/development-guidelines.md` in the repo) has no fields.
 
 ### Operations
 
@@ -173,18 +174,19 @@ Every operation runs `Requires` first and may return `unmet: <what>`, or `unreac
 | Operation | Input | Returns |
 |---|---|---|
 | `op: none` | none | `ready` or `unmet: <what>` |
-| `op: read` | `name` (optional; absent, the document at `where`, for the single-document kinds `guidelines`, `lenses`, `product`, `changelog`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
-| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where`, or creates it when `read` returns `missing`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>`, or `FAILED: <id> exists` |
+| `op: read` | `name` (optional; absent, the single document at `where` for `lenses`, `product` and `changelog`, and the guidelines file for `guidelines`) | `read <scratch path>`: the text, its fields as frontmatter; or `missing` |
+| `op: write` | `name: <id \| new>` (optional; absent, it replaces the single document at `where` (the guidelines file for `guidelines`), or creates it when `read` returns `missing`); `file: <absolute path>`; the fields as frontmatter in that file | `written` (existing name) or `written <id>` (`new`; the id is what later `read` and `list` calls use), or `proposed <link>`, or `FAILED: <id> exists` |
 | `op: search` | `keywords`; `files` (optional) | lines `<identifier> — <excerpt>`, or `none` |
-| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`, or `none` |
+| `op: list` | `keywords` (optional); `files` (optional) | lines `<identifier> — <field>: <value>; <field>: <value>`; on `guidelines`, `<name> — applies: <globs \| always \| null>; description: <d>`; or `none` |
 | `op: archive` | `folder: <absolute path of the work's folder>`; the container is named `<dir>`, the folder's name | `archived <name>` (`<name>`: the container's identifier; with a word that writes in place, or when the container already matches the folder (same files, same contents), a re-run replaces the copy and returns it again), `proposed <link>`, or `FAILED: <reason>` with nothing kept on the territory |
 
 - A request is checked in order: the `write` word, then the identifier. An unknown `write` word returns `unmet: write <word>`; it is checked with `Requires`, so a wrong word in `.flow.yml` already returns it at resolution, `op: none` included. `write` creates documents inside an existing `where`; a missing `where` is `unmet`.
 - `name: new`: the new document's identifier is the composed file's name without `.md`, returned as `written <id>`; an existing document with that identifier returns `FAILED: <id> exists`, and with `comment`, so does an open proposal with it.
-- `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it. On kind `archive`, `list` lines carry `status`, `work` and `description` only, `description` last.
+- `list` lines carry at least `status`, `work` and `touches`, with `description` last, so a `;` inside it cannot break the fields before it. On kind `archive`, `list` lines carry `status`, `work` and `description` only, `description` last. On kind `guidelines`, `applies` and `description` only, `description` last.
 - A proposal stays out of `list` and `search` until accepted, archive proposals included.
 - `op: archive` rules: `<dir>` is the last path component of `folder` (no trailing slash is sent). It needs an existing `where` (else `unmet`) and takes the adapter's `write` words as `write` does. On any other kind it returns `unmet: op archive on <kind>`. The container holds exactly the folder's files, every file kept, dotfiles included (the conductor guarantees the folder is clean, § Archive, repo, on a territory, so the adapter filters nothing); a re-run removes from the container the files removed from the folder since. When the container already holds exactly the folder's files, with the same contents, `op: archive` returns `archived <name>` whatever the word (the case after a proposal is accepted); a proposing word opens a proposal only when they differ, and until it is accepted the container stays as it is, an open proposal being replaced by the next run and returning the same `proposed <link>`; where the proposal lives is the adapter's choice, and the link points at it. The conductor stops on `unmet`, `unreachable` or `FAILED:`, removing nothing.
 - On kind `archive`, `list` and `search` give one line per container. `list`: `<dir> — status: <s>; work: <w>; description: <d>`, the values from its `STATUS.md` frontmatter; a container with no `STATUS.md` is left out of `list` and still searched. `search`: `<dir> — <excerpt>`, the excerpt from any file of the container; the conductor passes each hit on as `archive:<dir> — <excerpt>`. No Flow step sends `read` on kind `archive`.
+- On kind `guidelines`, `list` gives one line per document of the folder at `where`, in the format of the `op: list` row, globs unquoted; the guidelines file is not listed, and `none` means a folder with no documents. A document with no description is listed with `description: null`. `<name>` is the document's identifier, a `/` standing for a sub-folder (`rails/testing`); `document` is never a name, being the guidelines file's. `op: read; name: <name>` returns that document; `op: read` with no `name` returns the guidelines file; a `read` with `name` that returns `missing` is skipped and named in the next message. An adapter that can't list a `guidelines` folder answers `op: list` with `unmet: op list on guidelines`, never `none`: Flow stops on it (§ Resolution).
 - `proposed <link>`: the link is absolute (a URL, or `file://` with an absolute path) and points at the proposal. Until it is accepted, `read` and `list` return the document as it was (a new one is absent). A `read` of a name that exists only as a proposal returns `missing`.
 - `written` means the document is in place. `proposed <link>` means the adapter left a proposal for a person to accept (a comment, a draft) and the link leads to it; the document is not yet changed.
 - `search` and `list` return at most ten lines, or write the whole result to a scratch file and return its absolute path. `files` is an optional filter the adapter may apply; the conductor does the `touches` match itself on the fields `list` returns.
@@ -200,7 +202,7 @@ The reference behaviour: what an undeclared kind does, and what every adapter st
 - **Fields**: YAML frontmatter.
 - **`read`**: the file itself.
 - **`write`**: writes the file and returns `written`. The caller commits, as today.
-- **`search` and `list`**: `flow:docs` `op: search` and `op: descriptions`.
+- **`search` and `list`**: `flow:docs` `op: search` and `op: descriptions`; on `guidelines`, `/flow:dev`'s listing and frontmatter read of `<root>/guidelines/` (`skills/dev/SKILL.md`, § Guidelines folder).
 - **`archive`**: the move `/flow:archive` makes.
 
 ## Tokens, per-user values and links
