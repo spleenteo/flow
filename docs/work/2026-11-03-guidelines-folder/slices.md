@@ -21,6 +21,8 @@ Shared gotchas:
 - Packet paths are expanded absolute paths, never `${CLAUDE_SKILL_DIR}` (the work reference, § Agents › Dispatch contract).
 - This session runs the installed plugin copy (0.5.0), not this clone. A Done item that needs the edited conductor to run uses a clone of this repo in the session scratchpad with `claude --plugin-dir <clone>` on a throwaway repo, never this checkout and never a branch created here (`docs/development-guidelines.md` § Tests and § Releases).
 
+**Gate narrowing for this work** (ruled at V1's close, 2026-11-04): the link check of § Gate runs with `--glob '!docs/work/2026-11-03-guidelines-folder/*-packet.md'` added to its `rg --files` call. A packet copies `docs/development-guidelines.md` whole, so its relative links never resolve from the work folder. V4 makes `--glob '!docs/work/**/*-packet.md'` permanent in § Gate, and this narrowing ends with the work.
+
 ---
 
 ## V1 — The folder in the conductor
@@ -48,6 +50,12 @@ Shared gotchas:
 - Gate green.
 
 **Gotchas.** The resume table's `plan` row today says "the sources matched by the slice's paths": V1 adds the folder next to it, V2 removes the sources part. The first stop today says `sources in packet: none` when none: V1 adds the guidelines line alongside; V2 drops the sources one. Keep both in V1 so the skill is consistent at every commit.
+
+**V1 — done on 2026-11-04**
+
+The conductor learned docs/guidelines/: a **Guidelines folder.** paragraph beside § Sources (listing by rg plus one frontmatter awk, the two keys, three selection rules, the ## Guidelines packet section, the guidelines in packet: line at the first stop, the moments without slice paths, the territory condition), and every sentence that picked sections of docs/development-guidelines.md now passes it whole. The draft and Step 0 name the folder; the template sends prose to it; shared/work.md and shared/territories.md follow. T1's critical review found the /flow:design args stated two ways, a brief sentence (a wrong choice fixed by rewriting a description, never by configuration) with no place, and a "judged once" rule naming two moments; one fix round closed them. Ruled: shared/work.md:138 points style preferences at the folder only, as the plan said. The final review found the real cost of passing the guidelines file whole: its relative links break inside every committed packet, so the link check went red; the user chose to narrow the gate for this work, with V4 making the packet exclusion permanent. Left as follow-ups: skills/design/SKILL.md:14 doesn't list the guidelines in the called-mode args; the frontmatter awk should print the closing --- so an unclosed block is visible.
+
+Commits: 335788f, 398a6ab, 57adaf2, ec1b866, f52d4ad, 0d7d8c3, b13d738. Gate green with this work's packet narrowing.
 
 **Deviations found while planning V1**
 
@@ -120,6 +128,7 @@ Shared gotchas:
 - Inbound references to the moved sections: `README.md:278` ("the commit rules: `docs/development-guidelines.md`") and the `development-guidelines.md#releases` anchors in `README.md` (§ Develop the plugin) and `docs/architecture.md:57` point at `docs/guidelines/releases.md` and `commits.md`.
 - `skills/dev/impact-lenses.template.md`: two example lenses in its comments (multi-tenant ids; a DatoCMS sandbox that costs money), one line on the difference from a rule, and `:3` says coding rules go in the guidelines folder.
 - `README.md`: the "Customizing a stack" section rewritten around the folder: where a stack's rules live (preset), where yours live (the folder, two frontmatter lines), one example with three Rails files, how to replace a preset. Short: Work 2 will cut the README further. Also `README.md:89` ("the guidelines that apply"), `:122` and `:208` ("naming and placement follow `docs/development-guidelines.md`") say the folder, and the project tree (`:164-189`) gains `guidelines/`. `docs/architecture.md`: `docs/guidelines/` row in the "What a project holds" table and node in its diagram; the scheda's row says what it holds now; `:133` ("the guidelines that apply") says the scheda and the folder. `site/index.html`'s project tree gains `guidelines/`.
+- `docs/development-guidelines.md` § Gate: the link check's `rg --files` call gains `--glob '!docs/work/**/*-packet.md'` permanently (packets copy the scheda whole, so their relative links never resolve), with one sentence saying why; the narrowing V1 set for this work ends.
 - `docs/CHANGELOG.md`: nothing here; the close writes it through `flow:docs`.
 
 **Out.** The README's full rewrite and `docs/configuration.md` (Work 2). The site's text beyond the tree. `docs/design/flow_home-page.pen` (the site's design file holds the old tree; it follows in Work 2). The decision of 2026-10-25 (`projects-declare-marketplace-without-ref.md:28`) says "the guidelines' `## Releases` rule carries this": decisions aren't edited; known and accepted.
