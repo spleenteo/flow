@@ -86,7 +86,7 @@ Running `/flow:dev`, `/flow:project`, `/flow:brainstorm`, `/flow:grill` or `/flo
 - **Slice loop.** Per slice: Flow's planner writes the plan, a plan reviewer checks it, **first stop**; then the conductor hands the slice to `flow:slice-runner`, which runs in the background: it dispatches the executors, has a task reviewer check each task. The runner verifies the Done and the gate and drafts the narrative and lessons; the conductor runs the items left pending with the user, copies the draft and commits, **second stop**: "V3 closed. Plan V4, or stop here?"
 - **Tiers.** Planner, plan reviewer, impact and `flow:slice-runner` run on the top tier; executors and task reviews on the mid tier. A `critical` task's review, the final review and a third fix round go to the top tier. Plans mark which tasks depend on which and which are `critical`; independent tasks run in parallel.
 - **The ledger.** During execution `docs/work/<dir>/V<n>-ledger.md` is written by `flow:slice-runner`, two writes per task (when the executor first returns commits, when the task passes), and records every dispatch (task, agent, model, outcome, commits) and which tasks are complete. A resumed work doesn't dispatch a complete task again. A phase or a slice closes with `STATUS.md`, its documents and the commit in one call.
-- **Resume.** It reloads the standing documents (`STATUS.md`, the frame's criterion, the guidelines that apply, `lessons.md`, the matching decisions), then what each phase and step needs: the plan's header at review, the ledger at execute or close, `shaping.md` and `docs/design/README.md` at the design phase. It says what it reloaded, and continues.
+- **Resume.** It reloads the standing documents (`STATUS.md`, the frame's criterion, `docs/development-guidelines.md` and the `applies: always` files of `docs/guidelines/`, `lessons.md`, the matching decisions), then what each phase and step needs: the plan's header at review, the ledger at execute or close, `shaping.md` and `docs/design/README.md` at the design phase. It says what it reloaded, and continues.
 - **Close and merge.** After the last slice it asks before each step: close the work, the changelog and version (`/flow:changelog`), `/flow:archive`, then the merge. With `merge: local`, the default, it proposes the local merge into the target branch and runs it after your ok; with `merge: pr` it proposes a pull request and merges nothing. Push and tag each wait for their own ok. Code, changelog, version and archived work land together.
 
 The decisions are the memory of why: when a choice discards a real alternative, `/flow:dev` proposes recording it and writes it only after your yes.
@@ -107,23 +107,11 @@ The same chain maps the design tool's adapter: `design=<skill>` is a pair like t
 
 ## Customizing a stack
 
-You don't need to know how Flow works inside to bend it to your project. Three things to know first, then the options.
+You don't need to know how Flow works inside to bend it to your project. Two things to know first, then an example and the options.
 
-**Where the stack's guidelines live.** In the plugin, not in your repo. Each shipped stack is one skill, [`skills/stack-rails/SKILL.md`](skills/stack-rails/SKILL.md) for example, with five sections: `## Rules` (what the code must follow), `## Lenses` (what a change can break), `## Tests` (level and sensitive areas), `## Gate` (commands to run before a slice closes) and `## References`. Flow reads the skill when it needs it and hands its Rules to the agents that plan, write and review. Nothing is copied into your repo, except that on the first run Flow offers a draft of `docs/development-guidelines.md` built from the preset's Tests, Gate and References.
+**Where the stack's guidelines live.** In the plugin, not in your repo. Each shipped stack is one skill, [`skills/stack-rails/SKILL.md`](skills/stack-rails/SKILL.md) for example, with five sections: `## Rules` (what the code must follow), `## Lenses` (what a change can break), `## Tests` (level and sensitive areas), `## Gate` (commands to run before a slice closes) and `## References`. Flow reads the skill when it needs it and hands its Rules to the agents that plan, write and review. Nothing is copied into your repo, except that on the first run Flow offers a draft of `docs/development-guidelines.md` built from the preset's Tests, Gate and References. A preset is one `SKILL.md` per stack; your topics go in your own files.
 
-**Where your own guidelines live.** In your repo, in files you own. They add to the preset; they don't edit it.
-
-**One file per stack, not one per topic.** A preset is a single `SKILL.md`. If you want `testing.md`, `deploy.md` and `naming.md` for Rails, keep them in your repo and put them in `docs/guidelines/` (below).
-
-### Which option for which need
-
-| You want to | Do this | Effect |
-|---|---|---|
-| Add rules of your own, or say where you depart from the preset | Write them in `docs/development-guidelines.md`; put departures under `## Deviations`, with the reason | Agents get the sections that apply to each slice, next to the preset's Rules |
-| Add things a change can break here (public URLs, an export other teams import) | List them in `docs/impact-lenses.md` | Applied at impact and in every plan review, on top of the preset's lenses |
-| Give agents several documents, each for the slices that need it | Put them in `docs/guidelines/`, each opening with a `description` and, optionally, `applies` | A file reaches a slice's agents when its globs match the slice's paths, when its description fits the slice, or always (`applies: always`); the first stop names the files chosen |
-| Drop the shipped preset and use your own rules for a stack | Write your own preset skill and map it with `presets:` in `.flow.yml` | Replaces the shipped preset entirely |
-| Use the same replacement in all your projects | Same pair in the plugin option `stack_presets` | Applies wherever the project has no `presets:` of its own |
+**Where your own guidelines live.** In your repo, in `docs/guidelines/`: one Markdown file per concern, any names, sub-folders free. Each opens with two frontmatter lines, `description` (required, one line: what the file is for, which Flow reads to choose it) and `applies` (optional: quoted globs, or `always`). There is no list to keep anywhere else. `docs/development-guidelines.md` keeps four sections (`## Tests`, `## Gate`, `## References`, `## Deviations`) and travels whole in every packet. Your files add to the preset; they don't edit it.
 
 ### Several files for one stack
 
@@ -136,7 +124,17 @@ applies: ["spec/**", "test/**"]
 ---
 ```
 
-`naming.md` takes `applies: ["app/**"]`; `deploy.md` has a `description` only. A file reaches the agents of a slice whose paths match its `applies` globs, or whose `description` fits the slice, or always with `applies: always`. Quote the globs. Keep those files short: each chosen file is read whole on every dispatch. The rules: [`skills/dev/SKILL.md`](skills/dev/SKILL.md), § Guidelines folder.
+`rails/naming.md` takes `applies: ["app/**"]`; `rails/deploy.md` has a `description` only. A file reaches the agents of a slice whose paths match its `applies` globs, or whose `description` fits the slice, or always with `applies: always`. Quote the globs. Keep those files short: each chosen file is read whole on every dispatch. The rules: [`skills/dev/SKILL.md`](skills/dev/SKILL.md), § Guidelines folder.
+
+### Which option for which need
+
+| You want to | Do this | Effect |
+|---|---|---|
+| Add rules of your own | A file in `docs/guidelines/` with a description and, optionally, applies | Reaches the slices it concerns, next to the preset's Rules; the first stop names it |
+| Say where you depart from the preset | Under `## Deviations` in `docs/development-guidelines.md`, with the reason | Travels whole in every packet |
+| Add things a change can break here (public URLs, an export other teams import) | List them in `docs/impact-lenses.md` | Applied at impact and in every plan review, on top of the preset's lenses |
+| Drop the shipped preset and use your own rules for a stack | Write your own preset skill and map it with `presets:` in `.flow.yml` | Replaces the shipped preset entirely |
+| Use the same replacement in all your projects | Same pair in the plugin option `stack_presets` | Applies wherever the project has no `presets:` of its own |
 
 ### Replacing a preset
 
@@ -173,6 +171,9 @@ docs/
     checkout.pen
   decisions-log/
     2026-09-03-server-side-locale-detection.md
+  guidelines/
+    rails/
+      testing.md
   work/
     archived.md
     2026-09-02-mobile-menu/
@@ -204,7 +205,7 @@ Every slice plan is checked by a fresh agent, `flow:plan-reviewer`, with five le
 1. **Mandate fidelity**: the plan does only what the slice calls for and covers its Done.
 2. **Ignored lessons**: a rule in `lessons.md` the plan doesn't follow.
 3. **Existence**: the files and symbols the plan names exist and do what it assumes.
-4. **Guideline compliance**: tests, naming and placement follow `docs/development-guidelines.md`.
+4. **Guideline compliance**: tests, naming and placement follow `docs/development-guidelines.md` and the `docs/guidelines/` files in the packet.
 5. **Project lenses**: the lenses in `docs/impact-lenses.md`; "project lenses: none" when the file is absent.
 
 The guidelines template is [`skills/dev/development-guidelines.template.md`](skills/dev/development-guidelines.template.md); the decisions format is [`skills/docs/decisions.md`](skills/docs/decisions.md).
