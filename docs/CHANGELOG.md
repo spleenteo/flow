@@ -4,12 +4,12 @@ What shipped, by version, newest first. Each entry names the work it came from; 
 
 ## v0.6.0 — 2026-11-04 — The guidelines folder
 
-A project's guidelines now live in a folder of small documents instead of one file, and Flow picks the ones that apply to each step. The old `sources:` key goes away, and the upgrade converts it.
+A project's guidelines now live in a folder of small documents instead of one file, and Flow picks the ones that apply to each slice. The old `sources:` key goes away, and the upgrade converts it.
 
-- **Guidelines folder**: each guideline is its own document with a short frontmatter saying when it applies; the conductor reads the whole set and sends each agent only the guidelines that fit its step.
+- **Guidelines folder**: each guideline is its own document with a short frontmatter saying when it applies; the conductor reads their descriptions and sends each slice's agents only the guidelines that concern it; the first stop names them.
 - **Sources removed**: the `sources:` key is dropped from the conductor, the dispatch contract and the slice runner; the upgrade converts an existing one into guideline documents.
 - **Territories**: guidelines on a territory can be many documents, and the contract gained the fields and operations to list and read them; an old guidelines adapter now stops the run instead of being half-used.
-- **Templates**: the development-guidelines and impact-lenses templates send guideline prose to the folder and say a lens is not a rule; the "Customizing a stack" page is rewritten around the folder.
+- **Templates**: the development-guidelines and impact-lenses templates send guideline prose to the folder and say a lens is not a rule; the README's "Customizing a stack" section is rewritten around the folder.
 - **This repo**: naming, language, commits and releases moved into `docs/guidelines/`; the architecture map, the README and the site show the folder.
 - **Link check**: it now skips packets for good.
 - **Work**: `guidelines-folder`
