@@ -384,7 +384,7 @@ When the latest is higher than the installed version, compared number by number,
 
 ## Upgrade
 
-Old traces are what an earlier version of this plugin left behind under other names. The upgrade rewrites the ones Flow owns and points at the ones it doesn't. It is a run of its own: when `/flow:dev` or `/flow:project` finds old traces, it says so, offers the upgrade, and nothing else happens in that run (no profile, no first-run questions, no work opened or resumed). The next run starts on the upgraded state. `/flow:changelog`, `/flow:archive` and `flow:docs` never upgrade: facing an older configuration file, they stop and point to `/flow:dev`.
+Old traces are what an earlier version of this plugin left behind under other names. The upgrade rewrites the ones Flow owns, and the files `sources:` names, and points at the ones it doesn't. It is a run of its own: when `/flow:dev` or `/flow:project` finds old traces, it says so, offers the upgrade, and nothing else happens in that run (no profile, no first-run questions, no work opened or resumed). The next run starts on the upgraded state. `/flow:changelog`, `/flow:archive` and `flow:docs` never upgrade: facing an older configuration file, they stop and point to `/flow:dev`.
 
 **repo.** Looked for on the default branch (the target of Closing a work, step 4), not in the checkout, by one `bash` block that prints names or lines only (`<default>` is that branch). `.flow.yml` is listed first so its `root:` wins; the default root is `docs`:
 
@@ -397,11 +397,16 @@ git grep -l -F 'Devflow passes this file' <default> -- ":(glob)$r/*.md"
 git grep -n -E '/devflow|/projectflow|\.devflow\.yml' <default> -- CLAUDE.md .claude/CLAUDE.md CLAUDE.local.md
 git grep -n -w -E 'devflow|projectflow' <default> -- .claude/settings.json
 git ls-tree --name-only <default> .claude/skills/
-for b in $(git for-each-ref --format='%(refname:short)' refs/heads/work/); do git cat-file -e "$b:.devflow.yml" 2>/dev/null && echo "$b"; done
+git grep -n '^sources:' <default> -- .flow.yml
+for b in $(git for-each-ref --format='%(refname:short)' refs/heads/work/); do { git cat-file -e "$b:.devflow.yml" 2>/dev/null || git grep -q '^sources:' "$b" -- .flow.yml; } && echo "$b"; done
 echo "upgrade check: done"
 ```
 
-No file is printed in this check: the output carries names and matching lines, never a file's content.
+No file is printed in this check: the output carries names and matching lines, never a file's content. Of `sources:`, only the key line is a trace; the reads and lines below happen only in an upgrade it triggered.
+
+**`sources:`** (repo only: `/flow:project` has none)
+
+A `sources:` key in `.flow.yml` is converted: a `{territory, name}` entry is dropped and named, whatever its `when` holds; a `path` entry with at least one glob becomes a file of `<root>/guidelines/`, moved there with `git mv` and given a frontmatter of `applies` (its globs, merged across entries sharing a path) and a `description` drafted from its first heading, for the user to rewrite; when the destination `<root>/guidelines/<basename>` is already taken, the file gets its frontmatter where it is and is named, not moved; a `path` entry with only `{step}` or `{phase}` values and a missing path are dropped and named, and their files stay where they are; the key is removed. References to a moved file, its relative links that break and the guidelines file's sections beyond its four are pointed at, not edited.
 
 | Found | Rewritten |
 |---|---|
@@ -409,23 +414,33 @@ No file is printed in this check: the output carries names and matching lines, n
 | `stack: <name>` in the configuration | `stacks: [<name>]`; dropped when `stacks:` is already there |
 | `<root>/work/archived.md` whose header cites `/devflow-archive` | That line says `/flow:archive` |
 | A guidelines file under the root whose opening says "Devflow passes this file" | That sentence says `/flow:dev` |
+| `sources:`, a `{territory, name}` entry | Dropped and named, whatever its `when` holds: the kind lists its own documents |
+| `sources:`, a `path` entry with at least one glob | `applies` with the globs and a drafted `description`, marked for the user to rewrite. The block is merged into an existing frontmatter block (an existing `description` or `applies` is kept, and the globs are named in the message); the entry's globs are merged across entries sharing a path. The draft is `description: "<first heading, without its #s; \" becomes '>"  # drafted by the upgrade: rewrite it`, the first heading being looked for after the frontmatter block; with no heading, the basename without `.md`. The file is moved with `git mv` to `<root>/guidelines/<basename>` unless it is already under that folder. When that destination exists on the default branch, or two entries' different paths share the basename, the frontmatter is written, the file stays, and the message names it with the `git mv` for the user |
+| `sources:`, a `path` entry with no glob left (only `{step}` or `{phase}` values) | Dropped and named; the file stays |
+| `sources:`, a path missing or untracked on the default branch | Dropped and named |
+| `sources:` | The key removed, with its block-style lines |
 
 Pointed at and never edited, each as `<file>:<line> — <new name>`, or as the command that removes it:
 
 - lines of `CLAUDE.md`, `.claude/CLAUDE.md` and `CLAUDE.local.md` naming `/devflow`, `/devflow-docs`, `/devflow-archive`, `/projectflow` or `.devflow.yml`;
 - `Skill(...)` entries for those skills in `.claude/settings.json`;
 - project-scope copies of those skills under `.claude/skills/`;
-- open `work/*` branches whose tree still holds an old file: nothing refreshes them on its own. The command, for the user to run after the upgrade merges: `git switch work/<slug> && git merge <default>`.
+- inbound references to a moved file, as `<file>:<line> — <what>`: `@` imports in `CLAUDE.md` files and Markdown links;
+- a moved file's relative links that break from its new folder, as `<file>:<line> — <what>`;
+- the sections of the guidelines file beyond References, Tests, Gate and Deviations, as `<file>:<line> — <what>`, candidates for the folder;
+- open `work/*` branches whose tree still holds an old file or a `sources:` key: nothing refreshes them on its own. The command, for the user to run after the upgrade merges: `git switch work/<slug> && git merge <default>`.
 
 **project.** In the home and its sub-projects, rows of `slices.md` and `S<n>-plan.md` reading "devflow work `<slug>` in `<repo>` merged" become "flow:dev work `<slug>` in `<repo>` merged".
 
 **Asking.** One message: each change as `file — what changes`, then the pointed-at lines, then one question. With uncommitted changes in the checkout, say so and ask to commit or stash first (never stash it yourself). This check comes before any branch switch, the pending-merge proposal included. Nothing is written before the ok.
 
-**Writing, repo.** On the ok, the reminder comes first. When `docs/design/` holds files, ask the user to save and close them in the design tool first: a tool holding a file open can write its copy back over the switched branch. Then cut `flow-upgrade` from the default branch (outside `work/`, so no scan takes it for a work), write the changes, commit with explicit paths as `Upgrade to Flow's current conventions` (one commit), and switch back to the starting branch. Then propose merging it into the default branch locally, with its own ok, by the commands of Closing a work, step 4; the target is the default branch the detection found, never a work's `base:`. Push stays the user's. An existing `flow-upgrade` branch means the upgrade is pending: say so, propose the merge, never cut it again. **Writing, project.** Rewritten in place; committed only when the home is under version control, with explicit paths.
+When the check printed the `sources:` line, the message also lists each move, drop and the key removal as `file — what changes`. The reads for it happen after the check, line-only, in one call that first recomputes `r` with the check block's first line (shell state doesn't carry between calls); they are `git show <default>:.flow.yml` (block style puts the entries below the key line); per path, `git cat-file -e <default>:<path>`, the file's frontmatter block only (`git show <default>:<path>` through `awk 'NR==1&&$0!="---"{exit} NR>1&&$0=="---"{exit} NR>10{exit} NR>1'`), and the draft's heading, `git grep -m1 -n '^#' <default> -- <path>` run past that block (a line, never the file); inbound references, `git grep -n -F '<basename>' <default> -- '*.md' ':!<path>' ":!$r/work/**"`, keeping lines where the name sits in an `@` import or a `](` link; outbound links, `git grep -n -o -E '\]\([^)]+\)' <default> -- <path>`, each relative one resolved from the new folder and named when `git cat-file -e <default>:<resolved>` fails; extra sections, `git grep -n '^## ' <default> -- "$r/development-guidelines.md"`, beyond the four. When `.flow.yml` also declares `guidelines` under `territories:` (seen in the `git show`), the message says the moved files won't be read while that territory stands.
+
+**Writing, repo.** On the ok, the reminder comes first. When `docs/design/` holds files, ask the user to save and close them in the design tool first: a tool holding a file open can write its copy back over the switched branch. Then cut `flow-upgrade` from the default branch (outside `work/`, so no scan takes it for a work), write the changes (a `git mv` of `sources:` runs here, on `flow-upgrade`, after the ok, and the file is read there whole to merge the frontmatter at its new path), commit with explicit paths as `Upgrade to Flow's current conventions` (one commit; the pathspec holds both the source and the destination of every move, so the staged deletion doesn't follow the switch back), and switch back to the starting branch. Then propose merging it into the default branch locally, with its own ok, by the commands of Closing a work, step 4; the target is the default branch the detection found, never a work's `base:`. Push stays the user's. An existing `flow-upgrade` branch means the upgrade is pending: say so, propose the merge, never cut it again. **Writing, project.** Rewritten in place; committed only when the home is under version control, with explicit paths.
 
 **Declined.** The run stops there: nothing is opened or resumed, and nothing is written. Say that the old configuration (repo) or the old rows (project) are no longer read and that the upgrade will be offered again next time.
 
-**Resume on an old file.** **repo**, on a resume in `/flow:dev` (project homes have no branches), before any write. Read the work's branch, not the current checkout, since the user may still be on the default branch: `git show work/<slug>:.devflow.yml`, and likewise the other old files of the first table. When the branch still holds one, nothing runs on it:
+**Resume on an old file.** **repo**, on a resume in `/flow:dev` (project homes have no branches), before any write. Read the work's branch, not the current checkout, since the user may still be on the default branch: `git show work/<slug>:.devflow.yml`, and likewise the other old files of the first table, and `git grep -n '^sources:' work/<slug> -- .flow.yml`. When the branch still holds one, nothing runs on it:
 
 - **(a)** The default branch has no traces left: propose merging the default branch into the work's branch (`git merge <default>`), with its own ok, and stop until it is done. The clean-tree check comes before the merge's switch. When `docs/design/` holds files, ask the user to save and close them in the design tool first: a tool holding a file open can write its copy back over the switched branch.
-- **(b)** The old file exists only on this branch, because the default branch never had it: stop, say so, and point to the same rewrite as the first table, for the user to make on that branch: the rename (`git mv .devflow.yml .flow.yml`) when `.flow.yml` is absent, else the key merge into the existing `.flow.yml` and removal of the old file; and `stack:` to `stacks:`.
+- **(b)** The old file exists only on this branch, because the default branch never had it: stop, say so, and point to the same rewrite as the first table, for the user to make on that branch: the rename (`git mv .devflow.yml .flow.yml`) when `.flow.yml` is absent, else the key merge into the existing `.flow.yml` and removal of the old file; and `stack:` to `stacks:`, and the `sources:` rows of the table.
