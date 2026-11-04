@@ -5,7 +5,7 @@ Rules the plans and the changes in this repo must follow. The repo is a Claude C
 ## References
 
 - The brief behind this layout: [Guidelines as a folder](briefs/2026-11-03-guidelines-folder.md).
-- How a change is released: [`docs/guidelines/releases.md`](guidelines/releases.md); how commits are written: [`docs/guidelines/commits.md`](guidelines/commits.md). The other files of `docs/guidelines/` travel with them.
+- How a change is released: [`docs/guidelines/releases.md`](guidelines/releases.md); how commits are written: [`docs/guidelines/commits.md`](guidelines/commits.md). `naming.md` and `language.md` sit next to them; all four have `applies: always` and travel in every packet.
 - The skills hold the behaviour: [`skills/`](../skills/), the conductor in [`skills/dev/SKILL.md`](../skills/dev/SKILL.md).
 
 ## Tests

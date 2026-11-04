@@ -111,7 +111,7 @@ You don't need to know how Flow works inside to bend it to your project. Two thi
 
 **Where the stack's guidelines live.** In the plugin, not in your repo. Each shipped stack is one skill, [`skills/stack-rails/SKILL.md`](skills/stack-rails/SKILL.md) for example, with five sections: `## Rules` (what the code must follow), `## Lenses` (what a change can break), `## Tests` (level and sensitive areas), `## Gate` (commands to run before a slice closes) and `## References`. Flow reads the skill when it needs it and hands its Rules to the agents that plan, write and review. Nothing is copied into your repo, except that on the first run Flow offers a draft of `docs/development-guidelines.md` built from the preset's Tests, Gate and References. A preset is one `SKILL.md` per stack; your topics go in your own files.
 
-**Where your own guidelines live.** In your repo, in `docs/guidelines/`: one Markdown file per concern, any names, sub-folders free. Each opens with two frontmatter lines, `description` (required, one line: what the file is for, which Flow reads to choose it) and `applies` (optional: quoted globs, or `always`). There is no list to keep anywhere else. `docs/development-guidelines.md` keeps four sections (`## Tests`, `## Gate`, `## References`, `## Deviations`) and travels whole in every packet. Your files add to the preset; they don't edit it.
+**Where your own guidelines live.** In your repo, in `docs/guidelines/`: one Markdown file per concern, any names, sub-folders free. Each opens with two frontmatter lines, `description` (required, one line: what the file is for, which Flow reads to choose it when there is no `applies`) and `applies` (optional: quoted globs, or `always`). There is no list to keep anywhere else. `docs/development-guidelines.md` keeps four sections (`## Tests`, `## Gate`, `## References`, `## Deviations`) and travels whole in every packet. Your files add to the preset; they don't edit it.
 
 ### Several files for one stack
 
@@ -124,7 +124,7 @@ applies: ["spec/**", "test/**"]
 ---
 ```
 
-`rails/naming.md` takes `applies: ["app/**"]`; `rails/deploy.md` has a `description` only. A file reaches the agents of a slice whose paths match its `applies` globs, or whose `description` fits the slice, or always with `applies: always`. Quote the globs. Keep those files short: each chosen file is read whole on every dispatch. The rules: [`skills/dev/SKILL.md`](skills/dev/SKILL.md), § Guidelines folder.
+`rails/naming.md` takes `applies: ["app/**"]`; `rails/deploy.md` has a `description` only. A file with `applies` globs reaches the agents of the slices whose paths match them; one with a `description` only reaches the slices it fits; `applies: always` reaches every slice. Quote the globs. Keep those files short: each chosen file is read whole on every dispatch. The rules: [`skills/dev/SKILL.md`](skills/dev/SKILL.md), § Guidelines folder.
 
 ### Which option for which need
 
