@@ -167,3 +167,10 @@ The guidelines territory became multi-document. `shared/territories.md` gained t
 - Read-through of the README section as the external developer of the brief: the three questions he asked (where the stack's guidelines live, where mine go, how I give several files) are answered in that order.
 
 **Gotchas.** Until this release is installed, the conductor running this work is 0.5.0 and reads the scheda only: from V4's commit on, the close reads `docs/guidelines/releases.md` and `commits.md` by hand before the merge, with a note in `STATUS.md`'s Log. The site's tree is inside a `<pre>`: keep the indentation.
+
+**Deviations found while planning V4**
+
+- The inbound link fixes go in T1's commit with the move, so no commit leaves a link to a moved section.
+- The architecture diagram also gets an `upgrade, git mv` edge, and the new row names the upgrade as a writer, because V2's upgrade moves `sources:` files into the folder.
+- The README table drops its "several documents" row, since the first row now says the same thing. `## Deviations` gets its own row, split from "Add rules of your own".
+- The Done's `--plugin-dir` run is a close item, likely `pending:` with the user, as in V2. A throwaway work set at `step: plan` lets that run reach the first stop.
