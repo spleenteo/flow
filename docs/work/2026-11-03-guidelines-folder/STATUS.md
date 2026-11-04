@@ -23,6 +23,7 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 - [x] V2 — `sources:` goes away, with its upgrade (2026-11-04)
 - [x] V3 — Guidelines on a territory, many documents (2026-11-04)
 - [x] V4 — This repo adopts the folder; the docs show it (2026-11-04)
+- [x] V5 — The site shows the customization (2026-11-04)
 
 ## Pending proposals
 
@@ -38,3 +39,4 @@ description: "A project's guidelines become a folder docs/guidelines/ of files w
 - 11-04 — V2 close — 13 commits, gate green, final review done, pending --plugin-dir upgrade run passed headless, 5 lessons, no decision — V3 plan next — ~48 min runner — —
 - 11-04 — V3 close — 6 commits (2 fix rounds, same applies: null gap), gate green, final review done (lows only), 4 lessons, no decision — V4 plan next — ~19 min runner — —
 - 11-04 — V4 close — 6 commits (1 final-review fix round), gate green, final review done, pending --plugin-dir run passed headless, 3 lessons, no decision; from here the installed 0.5.0 conductor does not read docs/guidelines/, so the work close reads releases.md and commits.md by hand before the merge — work close next — ~9 min runner — —
+- 11-04 — V5 — added and closed on the owner's request: site text for the guidelines folder; plan, review and stops skipped as asked; gate green — work close next — ~5 min — —

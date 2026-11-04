@@ -178,3 +178,20 @@ The guidelines territory became multi-document. `shared/territories.md` gained t
 **V4 — done on 2026-11-04**
 
 Five commits and one read-only check, no ruling. T1 moved Naming, Language, Commits and Releases into four `docs/guidelines/` files with `applies: always`, byte for byte apart from the two `../` links, added `## References` before `## Tests`, and repointed the README and architecture links in the same commit, so no commit left a link to a moved section. T2 made the link check skip `docs/work/**/*-packet.md` for good, which ends V1's narrowing; the reviewer found no other copy of the gate command. T3 gave the lenses template its two examples and the rule-vs-lens line. T4 rewrote "Customizing a stack" around the folder. T5 added the folder to the architecture map, with its mermaid block rendered to confirm it parses, and to the site tree. T6's read-through found the developer's three questions answered in order (README:112, :114, :116-128). Every task review passed with no high or medium finding. The final review found that README:114 and :127 claimed a description chooses a file even when its globs don't match, which SKILL.md:56 rules out. The sentence predated V4 but now answered the developer's third question, so one fix round (3fbd762) aligned it, and also cleared up "travel with them" in References. T4's executor reported DONE without seeing one Verified output; the runner confirmed the heading order itself. The `--plugin-dir` run passed at the close: a clone of this branch, headless on a throwaway repo copying the guidelines file and `docs/guidelines/`, reached V1's first stop with the line "guidelines in packet: docs/guidelines/commits.md (8 lines), docs/guidelines/language.md (8 lines), docs/guidelines/naming.md (10 lines), docs/guidelines/releases.md (14 lines)". Briefs and the 2026-10-25 decision still name "§ Releases" in plain text; both are records and are not edited.
+
+---
+
+## V5 — The site shows the customization
+
+Added at V4's close on the owner's request ("comunica questa possibilità di customizzazione anche sul sito web").
+
+**In.** `site/index.html` only, with the components it already has: a "Your guidelines" entry in the "State on disk" list (`docs/guidelines/`, one file per concern with a description, chosen per slice next to the preset), and the `/flow:dev` card saying the presets can be extended with your own guidelines or replaced.
+
+**Out.** A dedicated section with a Rails example (new layout and CSS). `docs/design/flow_home-page.pen` (Work 2).
+
+**Done.** The two texts are in the page; the gate is green; the HTML parses. The site publishes on the push to `main` (`.github/workflows/pages.yml`).
+
+**V5 — done on 2026-11-04**
+
+Plan, review and stops skipped on the owner's explicit request ("vai online diretto"): two text edits in one static file, done in session. Gate green (validate, old names: allowed matches only, links: none broken), HTML parsed. No impact run: one file, no shared code.
+
