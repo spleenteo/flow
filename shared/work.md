@@ -135,7 +135,7 @@ description: "<what the user wants to achieve>"
 - the behaviour **will surprise** whoever reads the code or the plan later: a guard that looks useless, a callback in an unexpected place, a more expensive supplier, a step skipped;
 - an **outside constraint** shaped the choice: a platform limit, a client requirement, a permit, a legal rule.
 
-**The test: does the choice outlive the work?** If not, it is a ruling of the slice and goes in `slices.md`, or a rule for later slices and goes in `lessons.md`. Choices without alternatives, style preferences (repo: `development-guidelines.md`; project: `constraints.md`) and what the code or the plan already says by itself are no decisions.
+**The test: does the choice outlive the work?** If not, it is a ruling of the slice and goes in `slices.md`, or a rule for later slices and goes in `lessons.md`. Choices without alternatives, style preferences (repo: the files of `<root>/guidelines/`; project: `constraints.md`) and what the code or the plan already says by itself are no decisions.
 
 **Propose, never write unasked.** At the close of a step, and during execution when one shows up: *"This choice discarded X. Record it?"* One question, with the candidate's gist. Decisions are written when taken, never in bulk at the end: by then the reason has faded.
 

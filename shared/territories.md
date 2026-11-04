@@ -20,7 +20,7 @@ The kinds, and where an undeclared kind lives (the repo, under `<root>/`, as wit
 |---|---|
 | `decisions` | `<root>/decisions-log/` |
 | `changelog` | the `changelog` path |
-| `guidelines` | `<root>/development-guidelines.md` |
+| `guidelines` | `<root>/development-guidelines.md` and the files of `<root>/guidelines/` |
 | `lenses` | `<root>/impact-lenses.md` |
 | `product` | nothing: no product document is read |
 | `archive` | `<root>/work/archive/`, with `archived.md` |
