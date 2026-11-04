@@ -93,6 +93,12 @@ Commits: 335788f, 398a6ab, 57adaf2, ec1b866, f52d4ad, 0d7d8c3, b13d738. Gate gre
 
 **Gotchas.** The README's § Upgrading and `shared/work.md` § Upgrade are the only places allowed to keep old names, by the gate's old-names check: `sources` isn't an old name in that check, so nothing to add there. `git mv` in the upgrade runs on the `flow-upgrade` branch, as the rest of the upgrade does.
 
+**Deviations found while planning V2**
+
+- Done item 1's `\bsources?\b` also matches about 25 unrelated uses of the singular "source" (`<source` media, the marketplace `"source"` key, "source material", "source of truth" and others). The close filters those phrases out with `rg -v` and expects only the allowed set and the two upgrade sections.
+- "Both reads happen after the check and only on the ok" is read as "only when the check found `sources:`". The reads run at Asking, before the user's ok, because the Asking message must name each move (Done item 3).
+- Asking also runs line-only `git grep`s for inbound references, broken outbound links and the guidelines file's extra sections, because the Pointed-at list needs them. `SKILL.md` lines 114 and 126 allow them by citing § Upgrade › Asking, not only the mandate's two reads.
+
 ---
 
 ## V3 — Guidelines on a territory, many documents
