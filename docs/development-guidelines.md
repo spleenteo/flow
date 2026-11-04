@@ -23,7 +23,7 @@ Every behaviour of Claude Code a document states is either verified in a spike o
 
 ## Gate
 
-Green before a slice closes, in order, from the repo root. The link check skips links inside fenced code blocks, where templates hold placeholder links. Both `rg` calls name the path (`.`): without one, `rg` reads stdin when it isn't a terminal and hangs.
+Green before a slice closes, in order, from the repo root. The link check skips links inside fenced code blocks, where templates hold placeholder links. It also skips the packets (`docs/work/**/*-packet.md`): a packet copies this file and the chosen `docs/guidelines/` files whole, so their relative links never resolve from the work folder. Both `rg` calls name the path (`.`): without one, `rg` reads stdin when it isn't a terminal and hangs.
 
 ```bash
 claude plugin validate .        # passes; expected warnings: missing version and icon, the folder also holding a marketplace manifest
@@ -36,7 +36,7 @@ rg -n -i --hidden '\bdevflow\b|devflow-(docs|archive)|projectflow|\.devflow\.yml
   --glob '!docs/development-guidelines.md' .
 # every relative Markdown link resolves: prints "file -> target" per broken link, nothing when green.
 # Add --glob '!path' to the rg --files call for the narrowing a work's slices.md sets.
-rg --files --glob '*.md' --glob '!docs/work/archive/**' . | while read -r f; do
+rg --files --glob '*.md' --glob '!docs/work/archive/**' --glob '!docs/work/**/*-packet.md' . | while read -r f; do
   awk '/^ *```/{x=!x; next} !x{s=$0; while(match(s,/\]\([^) ]+/)){print substr(s,RSTART+2,RLENGTH-2); s=substr(s,RSTART+RLENGTH)}}' "$f" |
     while read -r t; do
       case "$t" in http*|mailto:*|\#*) continue;; esac
